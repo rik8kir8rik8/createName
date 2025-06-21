@@ -1,0 +1,9 @@
+emotion,body_type,svg_pattern,description
+happy,standing,circle+upward_arc,立っている状態で笑顔（円+上向き弧）
+sad,hunched,circle+downward_arc,うつむいた状態で悲しい表情（円+下向き弧）
+angry,tense,square+zigzag,緊張した姿勢で怒り（四角+ジグザグ）
+surprised,dynamic,triangle+exclamation,動的なポーズで驚き（三角+感嘆符）
+calm,relaxed,oval+horizontal_line,リラックスした状態で平静（楕円+水平線）
+thinking,seated,circle+question_mark,座って考えている状態（円+疑問符）
+running,motion,elongated_oval+lines,走っている動作（細長楕円+線）
+fighting,action,diamond+cross,戦闘中のアクション（菱形+十字）

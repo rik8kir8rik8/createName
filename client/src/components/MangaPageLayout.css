@@ -1,0 +1,70 @@
+.manga-page-layout {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  height: 600px;
+  padding: 12px;
+  background: white;
+  border: 3px solid #000;
+  border-radius: 4px;
+  position: relative;
+  direction: rtl;
+}
+
+/* レイアウトテンプレート別スタイル */
+.layout-standard-4 {
+  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
+}
+
+.layout-vertical-story {
+  grid-template-rows: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
+}
+
+.layout-action-sequence {
+  grid-template-rows: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.layout-dialogue-focus {
+  grid-template-rows: 2fr 1fr 2fr;
+  grid-template-columns: 1fr;
+}
+
+.layout-climax-spread {
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.layout-intro-page {
+  grid-template-rows: 2fr repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.layout-intro-page .manga-panel:first-child {
+  grid-column: 1 / -1;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .manga-page-layout {
+    height: 500px;
+    padding: 8px;
+    gap: 6px;
+  }
+  
+  .layout-standard-4,
+  .layout-vertical-story,
+  .layout-action-sequence,
+  .layout-intro-page {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(auto-fit, 1fr);
+  }
+  
+  .layout-intro-page .manga-panel:first-child {
+    grid-column: 1;
+  }
+}

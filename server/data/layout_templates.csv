@@ -1,0 +1,7 @@
+template_name,panel_count,layout_pattern,use_case
+standard_4,4,2x2_grid,標準的な4コマ構成
+vertical_story,6,3x2_vertical,縦に流れる物語
+action_sequence,8,irregular_small,アクションシーケンス用
+dialogue_focus,3,large_small_large,会話重視のレイアウト
+climax_spread,2,full_width_split,見開きクライマックス用
+intro_page,5,large_top_4small,導入ページ用レイアウト

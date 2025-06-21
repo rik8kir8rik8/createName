@@ -1,0 +1,275 @@
+.storyboard-display {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #2196f3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #888;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.storyboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.storyboard-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  margin-left: 20px;
+}
+
+.mode-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-btn {
+  padding: 8px 16px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.mode-btn:hover {
+  border-color: #2196f3;
+}
+
+.mode-btn.active {
+  background: #2196f3;
+  color: white;
+  border-color: #2196f3;
+}
+
+.storyboard-header h2 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.storyboard-info {
+  display: flex;
+  gap: 16px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.storyboard-info span {
+  background: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.manga-pages-container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.manga-page {
+  border: 2px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.page-header {
+  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  color: white;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-number {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.scene-info {
+  display: flex;
+  gap: 16px;
+  font-size: 0.9rem;
+}
+
+.scene-description {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.emotion-tone {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.page-content {
+  padding: 16px;
+  background: white;
+}
+
+.applied-rules {
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.85rem;
+}
+
+.applied-rules summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.applied-rules ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.applied-rules li {
+  margin-bottom: 4px;
+  color: #555;
+}
+
+.rule-high {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+.rule-medium {
+  color: #f57c00;
+}
+
+.rule-low {
+  color: #388e3c;
+}
+
+.storyboard-footer {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 2px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.overall-pacing {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.export-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.export-btn {
+  padding: 8px 16px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.export-btn:hover {
+  background: #45a049;
+  transform: translateY(-1px);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 編集モーダル */
+.edit-modal-placeholder {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+
+.modal-content h3 {
+  margin: 0 0 16px 0;
+  color: #2c3e50;
+}
+
+.modal-content p {
+  margin: 0 0 20px 0;
+  color: #666;
+}
+
+.modal-content button {
+  padding: 8px 20px;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
