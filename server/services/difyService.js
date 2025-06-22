@@ -61,6 +61,8 @@ class DifyService {
         this.flow1ApiKey
       );
 
+      console.log('🔄 Flow 1 raw result:', JSON.stringify(result, null, 2));
+      console.log('🔄 Flow 1 outputs:', result.data?.outputs);
 
       let parsedData;
       try {
@@ -105,7 +107,6 @@ class DifyService {
   async processFlow2(pageData, previousInstructions = '') {
     try {
       console.log(`🔄 Processing Flow 2 (Panel Layout) for page ${pageData.page}...`);
-      
       const result = await this.callDifyWorkflow(
         this.flow2WorkflowId, 
         {
@@ -122,11 +123,11 @@ class DifyService {
         this.flow2ApiKey
       );
 
-      console.log('🔄 Flow 2 result:', result.data.outputs);
+      console.log('🔄 Flow 2 result:', result.data.outputs.page_panels);
 
-      const parsedData = typeof result.data.outputs === 'string' 
-        ? JSON.parse(result.data.outputs) 
-        : result.data.outputs;
+      const parsedData = typeof result.data.outputs.page_panels === 'string' 
+        ? JSON.parse(result.data.outputs.page_panels) 
+        : result.data.outputs.page_panels;
 
       this.validateFlow2Output(parsedData);
       
@@ -135,6 +136,40 @@ class DifyService {
     } catch (error) {
       console.error(`❌ Flow 2 error for page ${pageData.page}:`, error);
       throw new Error(`コマワリ処理に失敗しました (ページ${pageData.page}): ${error.message}`);
+    }
+  }
+
+  async processFlow3(panels, panel, nextPanelData) {
+    try {
+      console.log(`🔄 Processing Flow 3 (Panel) for page ${panel.index}...`);
+      
+      const result = await this.callDifyWorkflow(
+        this.flow3WorkflowId, 
+        {
+          index: panel.index,
+          description: panel.description,
+          type: panel.type,
+          nextPanel: panel.index !== panels.length ? panels.find(p => p.index === panel.index + 1) : null,
+          previousPanel: panel.index === 1 ? null : panels.find(p => p.index === panel.index - 1),
+          place: panel.place,
+        },
+        'user-001',
+        this.flow3ApiKey
+      );
+
+      console.log('🔄 Flow 3 result:', result.data.outputs);
+
+      const parsedData = typeof result.data.outputs.structured_output === 'string' 
+        ? JSON.parse(result.data.outputs.structured_output) 
+        : result.data.outputs.structured_output;
+
+      this.validateFlow2Output(parsedData);
+      
+      console.log(`✅ Flow 3 completed for panel ${panel}`);
+      return parsedData;
+    } catch (error) {
+      console.error(`❌ Flow 3 error for panel ${panel.index}:`, error);
+      throw new Error(`コマ構図決定処理に失敗しました (コマ${panel.index}): ${error.message}`);
     }
   }
 
@@ -150,18 +185,7 @@ class DifyService {
     // Handle the specific Dify output structure: { scenes: { scene: [...] } }
     if (data.scenes && data.scenes.scene && Array.isArray(data.scenes.scene)) {
       console.log('✅ Found Dify scenes.scene structure, extracting...');
-      // Need to add place field to content items since Dify only puts it at scene level
-      const processedScenes = data.scenes.scene.map(scene => {
-        if (scene.contents && scene.place) {
-          const contentsWithPlace = scene.contents.map(content => ({
-            ...content,
-            place: content.place || scene.place
-          }));
-          return { ...scene, contents: contentsWithPlace };
-        }
-        return scene;
-      });
-      return { scene: processedScenes };
+      return { scene: data.scenes.scene };
     }
 
     // Check if data already has the expected structure
@@ -187,6 +211,12 @@ class DifyService {
 
     console.log('🔄 Processing scenes:', scenes.length);
     return { scene: this.processScenes(scenes) };
+  }
+
+  ensureContentsStructure(data) {
+    return {
+      scene: data.scene.map(scene => this.processScene(scene))
+    };
   }
 
   processScenes(scenes) {
@@ -235,6 +265,7 @@ class DifyService {
         throw new Error(`Invalid Flow 1 output: scene[${index}].pagesNum must be a number`);
       }
       
+
       if (!Array.isArray(scene.contents)) {
         throw new Error(`Invalid Flow 1 output: scene[${index}].contents must be an array`);
       }
@@ -244,7 +275,7 @@ class DifyService {
       }
 
       scene.contents.forEach((content, contentIndex) => {
-        const requiredFields = ['page', 'elements', 'characterEmotions', 'text', 'concept', 'place'];
+        const requiredFields = ['page', 'elements', 'characterEmotions', 'text', 'concept'];
         requiredFields.forEach(field => {
           if (!(field in content)) {
             throw new Error(`Invalid Flow 1 output: scene[${index}].contents[${contentIndex}].${field} is required`);

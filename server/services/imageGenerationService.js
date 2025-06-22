@@ -147,13 +147,26 @@ class ImageGenerationService {
    * 単一パネルを描画
    */
   async drawSinglePanel(ctx, panel, bounds) {
+    // Flow3構図データの取得
+    const compositionData = panel.composition_data;
+    
+    // 視覚効果に基づいてパネル背景色を調整
+    let panelBg = '#ffffff';
+    if (compositionData?.visualEffects === 'emotional') {
+      panelBg = '#fff8f0'; // 温かみのある色調
+    } else if (compositionData?.visualEffects === 'deformed') {
+      panelBg = '#f0f8ff'; // 青みがかった色調
+    } else if (compositionData?.visualEffects === 'past') {
+      panelBg = '#faf8f0'; // セピア調
+    }
+
     // パネル枠を描画（漫画風の太い黒枠）
     ctx.strokeStyle = this.panelBorderColor;
     ctx.lineWidth = this.panelBorderWidth;
     ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
     
-    // パネル内部を白で塗りつぶし
-    ctx.fillStyle = '#ffffff';
+    // パネル内部を効果に応じた色で塗りつぶし
+    ctx.fillStyle = panelBg;
     ctx.fillRect(bounds.x + this.panelBorderWidth/2, bounds.y + this.panelBorderWidth/2, 
                 bounds.width - this.panelBorderWidth, bounds.height - this.panelBorderWidth);
 
@@ -171,9 +184,16 @@ class ImageGenerationService {
     ctx.textAlign = 'right';
     ctx.fillText(`${panel.panel_number}`, contentArea.x + contentArea.width - 5, contentArea.y + 15);
 
-    // キャラクターを描画
+    // 背景を先に描画（Flow3データを活用）
+    if (compositionData?.background === 1 && compositionData?.backgroundDetails) {
+      await this.drawBackgroundWithComposition(ctx, compositionData.backgroundDetails, contentArea, compositionData);
+    } else if (panel.content.background) {
+      await this.drawBackground(ctx, panel.content.background, contentArea);
+    }
+
+    // キャラクターを描画（カメラアングルを考慮）
     if (panel.content.characters && panel.content.characters.length > 0) {
-      await this.drawCharacters(ctx, panel.content.characters, contentArea);
+      await this.drawCharactersWithComposition(ctx, panel.content.characters, contentArea, compositionData);
     }
 
     // セリフを描画
@@ -181,15 +201,176 @@ class ImageGenerationService {
       await this.drawDialogue(ctx, panel.content.dialogue, contentArea);
     }
 
-
-    // 背景説明を描画
-    if (panel.content.background) {
-      await this.drawBackground(ctx, panel.content.background, contentArea);
-    }
-
     // 視覚的ノートを描画
     if (panel.visual_notes) {
       await this.drawVisualNotes(ctx, panel.visual_notes, contentArea);
+    }
+
+    // 構図情報を左下に小さく表示（デバッグ用）
+    if (compositionData) {
+      ctx.fillStyle = '#999999';
+      ctx.font = '8px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText(`角度:${compositionData.cameraAngle} 効果:${compositionData.visualEffects}`, 
+                   contentArea.x + 2, contentArea.y + contentArea.height - 5);
+    }
+  }
+
+  /**
+   * Flow3構図データを活用してキャラクターを描画
+   */
+  async drawCharactersWithComposition(ctx, characters, contentArea, compositionData) {
+    if (!characters || characters.length === 0) return;
+    
+    // カメラアングルに基づいてキャラクターサイズとポジションを調整
+    let charScale = 1.0;
+    let charY = contentArea.y + 60;
+    
+    if (compositionData?.cameraAngle === 'near') {
+      charScale = 1.5; // クローズアップ
+      charY = contentArea.y + 40;
+    } else if (compositionData?.cameraAngle === 'far') {
+      charScale = 0.7; // 引きの構図
+      charY = contentArea.y + 80;
+    }
+    
+    const charSpacing = contentArea.width / (characters.length + 1);
+    
+    characters.forEach((character, index) => {
+      const charX = contentArea.x + charSpacing * (index + 1);
+      
+      // キャラクターの描画（スケール適用）
+      this.drawSingleCharacter(ctx, character, charX, charY, charScale, compositionData);
+    });
+  }
+
+  /**
+   * 単一キャラクターを描画（構図データ考慮）
+   */
+  drawSingleCharacter(ctx, character, x, y, scale, compositionData) {
+    const size = {
+      head: 15 * scale,
+      body: 60 * scale,
+      arm: 20 * scale,
+      leg: 25 * scale
+    };
+
+    // 視覚効果に基づいて線の太さを調整
+    let lineWidth = 3;
+    if (compositionData?.visualEffects === 'emotional') {
+      lineWidth = 4; // 感情的な場面では太く
+    } else if (compositionData?.visualEffects === 'deformed') {
+      lineWidth = 2; // 変形効果では細く
+    }
+
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = lineWidth;
+    
+    // 頭（円）
+    ctx.beginPath();
+    ctx.arc(x, y, size.head, 0, 2 * Math.PI);
+    ctx.stroke();
+    
+    // 体（縦線）
+    ctx.beginPath();
+    ctx.moveTo(x, y + size.head);
+    ctx.lineTo(x, y + size.body);
+    ctx.stroke();
+    
+    // 腕（横線）
+    ctx.beginPath();
+    ctx.moveTo(x - size.arm, y + size.body * 0.6);
+    ctx.lineTo(x + size.arm, y + size.body * 0.6);
+    ctx.stroke();
+    
+    // 足（ハの字）
+    ctx.beginPath();
+    ctx.moveTo(x, y + size.body);
+    ctx.lineTo(x - size.leg * 0.6, y + size.body + size.leg);
+    ctx.moveTo(x, y + size.body);
+    ctx.lineTo(x + size.leg * 0.6, y + size.body + size.leg);
+    ctx.stroke();
+    
+    // 感情表現（顔の中）
+    this.drawCharacterEmotion(ctx, character, x, y, scale);
+  }
+
+  /**
+   * キャラクターの感情表現を描画
+   */
+  drawCharacterEmotion(ctx, character, x, y, scale) {
+    ctx.fillStyle = this.getEmotionColor(character.emotion);
+    ctx.beginPath();
+    
+    const eyeSize = 2 * scale;
+    const eyeOffset = 5 * scale;
+    const mouthRadius = 8 * scale;
+    
+    if (character.emotion === 'happy') {
+      // 笑顔
+      ctx.arc(x - eyeOffset, y - eyeOffset, eyeSize, 0, 2 * Math.PI); // 左目
+      ctx.arc(x + eyeOffset, y - eyeOffset, eyeSize, 0, 2 * Math.PI); // 右目
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, y + eyeOffset, mouthRadius, 0, Math.PI); // 口
+      ctx.stroke();
+    } else if (character.emotion === 'sad') {
+      // 悲しい顔
+      ctx.arc(x - eyeOffset, y - eyeOffset, eyeSize, 0, 2 * Math.PI); // 左目
+      ctx.arc(x + eyeOffset, y - eyeOffset, eyeSize, 0, 2 * Math.PI); // 右目
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, y + eyeOffset + 5, mouthRadius, Math.PI, 2 * Math.PI); // 下向きの口
+      ctx.stroke();
+    } else {
+      // デフォルト（中性的な顔）
+      ctx.arc(x - eyeOffset, y - eyeOffset, eyeSize, 0, 2 * Math.PI); // 左目
+      ctx.arc(x + eyeOffset, y - eyeOffset, eyeSize, 0, 2 * Math.PI); // 右目
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(x - eyeOffset, y + eyeOffset);
+      ctx.lineTo(x + eyeOffset, y + eyeOffset);
+      ctx.stroke();
+    }
+  }
+
+  /**
+   * Flow3構図データを活用した背景描画
+   */
+  async drawBackgroundWithComposition(ctx, backgroundDetails, contentArea, compositionData) {
+    // 背景の基本色を設定
+    let bgColor = '#f0f0f0';
+    if (compositionData.visualEffects === 'emotional') {
+      bgColor = '#ffe4e1'; // 温かい背景
+    } else if (compositionData.visualEffects === 'past') {
+      bgColor = '#f5f5dc'; // セピア調背景
+    } else if (compositionData.visualEffects === 'deformed') {
+      bgColor = '#e6f3ff'; // 冷たい背景
+    }
+
+    // 背景を塗りつぶし
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(contentArea.x, contentArea.y + contentArea.height * 0.7, 
+                 contentArea.width, contentArea.height * 0.3);
+
+    // 背景詳細テキストを描画
+    ctx.fillStyle = '#666666';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    const bgText = backgroundDetails.length > 30 ? 
+      backgroundDetails.substring(0, 27) + '...' : backgroundDetails;
+    ctx.fillText(bgText, contentArea.x + contentArea.width / 2, 
+                 contentArea.y + contentArea.height - 15);
+
+    // カメラアングルに応じた背景要素を追加
+    if (compositionData.cameraAngle === 'far') {
+      // 遠景の場合は地平線を追加
+      ctx.strokeStyle = '#cccccc';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(contentArea.x, contentArea.y + contentArea.height * 0.8);
+      ctx.lineTo(contentArea.x + contentArea.width, contentArea.y + contentArea.height * 0.8);
+      ctx.stroke();
     }
   }
 

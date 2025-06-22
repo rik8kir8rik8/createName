@@ -47,6 +47,14 @@ class EnvironmentConfig {
       'DIFY_FLOW2_WORKFLOW_ID': {
         condition: () => process.env.USE_MOCK_DIFY !== 'true',
         description: 'Dify Flow2 (panel layout) workflow ID'
+      },
+      'DIFY_FLOW3_API_KEY': {
+        condition: () => process.env.USE_MOCK_DIFY !== 'true',
+        description: 'Dify Flow3 API key for composition workflow'
+      },
+      'DIFY_FLOW3_WORKFLOW_ID': {
+        condition: () => process.env.USE_MOCK_DIFY !== 'true',
+        description: 'Dify Flow3 (composition) workflow ID'
       }
     };
 
@@ -98,6 +106,7 @@ class EnvironmentConfig {
     const hasOpenAI = !!process.env.OPENAI_API_KEY;
     const hasDifyFlow1 = !!process.env.DIFY_FLOW1_API_KEY;
     const hasDifyFlow2 = !!process.env.DIFY_FLOW2_API_KEY;
+    const hasDifyFlow3 = !!process.env.DIFY_FLOW3_API_KEY;
 
     console.log('🔧 Current configuration:');
     console.log(`  - OpenAI API: ${hasOpenAI ? '✅ Configured' : '❌ Missing'}`);
@@ -106,6 +115,7 @@ class EnvironmentConfig {
     } else {
       console.log(`  - Dify Flow1: ${hasDifyFlow1 ? '✅ Configured' : '❌ Missing'}`);
       console.log(`  - Dify Flow2: ${hasDifyFlow2 ? '✅ Configured' : '❌ Missing'}`);
+      console.log(`  - Dify Flow3: ${hasDifyFlow3 ? '✅ Configured' : '❌ Missing'}`);
     }
     console.log(`  - Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log('');
@@ -126,17 +136,21 @@ class EnvironmentConfig {
         apiUrl: process.env.DIFY_API_URL || 'https://api.dify.ai/v1',
         flow1ApiKey: null,
         flow2ApiKey: null,
+        flow3ApiKey: null,
         flow1Id: null,
-        flow2Id: null
+        flow2Id: null,
+        flow3Id: null
       };
     }
 
     const flow1ApiKey = process.env.DIFY_FLOW1_API_KEY;
     const flow2ApiKey = process.env.DIFY_FLOW2_API_KEY;
+    const flow3ApiKey = process.env.DIFY_FLOW3_API_KEY;
     const flow1Id = process.env.DIFY_FLOW1_WORKFLOW_ID;
     const flow2Id = process.env.DIFY_FLOW2_WORKFLOW_ID;
+    const flow3Id = process.env.DIFY_FLOW3_WORKFLOW_ID;
 
-    if (!flow1ApiKey || !flow2ApiKey || !flow1Id || !flow2Id) {
+    if (!flow1ApiKey || !flow2ApiKey || !flow3ApiKey || !flow1Id || !flow2Id || !flow3Id) {
       throw new Error('Dify configuration is incomplete. Please check your API keys and workflow IDs.');
     }
 
@@ -145,8 +159,10 @@ class EnvironmentConfig {
       apiUrl: process.env.DIFY_API_URL || 'https://api.dify.ai/v1',
       flow1ApiKey,
       flow2ApiKey,
+      flow3ApiKey,
       flow1Id,
-      flow2Id
+      flow2Id,
+      flow3Id
     };
   }
 

@@ -24,6 +24,7 @@ class DifyIntegrationService {
 
       for (const scene of flow1Result.scene) {
         const processedContents = [];
+         
         
         for (const content of scene.contents) {
           let flow2Result;
@@ -34,9 +35,32 @@ class DifyIntegrationService {
             flow2Result = await this.difyService.processFlow2(content, previousInstructions);
           }
 
+          console.log(`📐 Processing panels through Flow 3 for page ${content.page}...`);
+          const processedPanels = [];
+          
+          for (const panel of flow2Result.panels) {
+            let flow3Result;
+            if (this.difyService.useMock || useMockDify) {
+              console.log(`💡 Using mock Dify Flow 3 for panel ${panel.index}`);
+              flow3Result = this.difyService.getMockFlow3Output(panel);
+            } else {
+              flow3Result = await this.difyService.processFlow3( flow2Result,panel);
+            }
+
+            processedPanels.push({
+              ...panel,
+              composition: flow3Result
+            });
+
+            await this.delay(50);
+          }
+
           processedContents.push({
             ...content,
-            panelLayout: flow2Result
+            panelLayout: {
+              ...flow2Result,
+              panels: processedPanels
+            }
           });
 
           // Update previousInstructions for the next page
@@ -156,9 +180,9 @@ class DifyIntegrationService {
 - 要素: ${content.elements.join(', ')}
 - キャラクター感情: ${content.characterEmotions.join(', ')}
 
-パネル情報:
+コマ情報:
 ${content.panelLayout.panels.map(panel => 
-  `- パネル${panel.index}: ${panel.description} (タイプ: ${panel.type.join(', ')})`
+  `- コマ${panel.index}: ${panel.description} (タイプ: ${panel.type.join(', ')})`
 ).join('\n')}
 
 指示: ${content.panelLayout.instructions || ''}
@@ -197,6 +221,14 @@ ${content.panelLayout.panels.map(panel =>
             background: content.place
           },
           visual_notes: panel.description,
+          composition_data: panel.composition ? {
+            cameraAngle: panel.composition.cameraAngle,
+            composition: panel.composition.composition,
+            visualEffects: panel.composition.visualEffects,
+            characterDetails: panel.composition.characterDetails,
+            background: panel.composition.background,
+            backgroundDetails: panel.composition.backgroundDetails
+          } : null,
           dify_data: {
             original_panel: panel,
             page_info: content

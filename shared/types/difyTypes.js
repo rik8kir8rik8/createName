@@ -92,55 +92,106 @@ const DifyFlow1Schema = {
 };
 
 const DifyFlow2Schema = {
-  type: "object",
-  properties: {
-    panels: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          index: {
-            type: "number",
-            description: "index"
+  "type": "object",
+  "properties": {
+    "panels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "number",
+            "description": "index"
           },
-          description: {
-            type: "string",
-            description: "description"
+          "description": {
+            "type": "string",
+            "description": "description"
           },
-          type: {
-            type: "array",
-            enum: [
+          "type": {
+            "type": "array",
+            "enum": [
               "event",
-              "situation", 
+              "situation",
               "reaction",
               "turning",
               "move"
             ],
-            items: {
-              type: "string"
+            "items": {
+              "type": "string"
             }
+          },
+          "place": {
+            "type": "string"
           }
         },
-        required: [
+        "required": [
           "index",
           "description",
-          "type"
+          "type",
+          "place"
         ],
-        additionalProperties: false
+        "additionalProperties": false
       }
     },
-    page: {
-      type: "number"
+    "page": {
+      "type": "number"
     },
-    instructions: {
-      type: "string"
+    "instructions": {
+      "type": "string"
     }
   },
-  required: [
+  "required": [
     "panels",
     "page"
   ],
-  additionalProperties: false
+  "additionalProperties": false
+};
+
+const DifyFlow3Schema = {
+  "type": "object",
+  "properties": {
+    "cameraAngle": {
+      "type": "string",
+      "enum": [
+        "near",
+        "middle",
+        "far"
+      ]
+    },
+    "composition": {
+      "type": "string"
+    },
+    "visualEffects": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "emotional",
+        "deformed",
+        "past"
+      ]
+    },
+    "characterDetails": {
+      "type": "string"
+    },
+    "background": {
+      "type": "number",
+      "enum": [
+        0,
+        1
+      ]
+    },
+    "backgroundDetails": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cameraAngle",
+    "composition",
+    "visualEffects",
+    "characterDetails",
+    "background"
+  ],
+  "additionalProperties": false
 };
 
 const DifyElementsEnum = [
@@ -176,10 +227,27 @@ const DifyPanelTypesEnum = [
   "move"
 ];
 
+const DifyCameraAngleEnum = [
+  "near",
+  "middle",
+  "far"
+];
+
+const DifyVisualEffectsEnum = [
+  "normal",
+  "emotional",
+  "deformed",
+  "past"
+];
+
+
 module.exports = {
   DifyFlow1Schema,
   DifyFlow2Schema,
+  DifyFlow3Schema,
   DifyElementsEnum,
   DifyEmotionsEnum,
-  DifyPanelTypesEnum
+  DifyPanelTypesEnum,
+  DifyCameraAngleEnum,
+  DifyVisualEffectsEnum 
 };
