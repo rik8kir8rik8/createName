@@ -1,3 +1,4 @@
+const { json } = require('express');
 const envConfig = require('../config/env');
 const fetch = require('node-fetch');
 
@@ -8,8 +9,10 @@ class DifyService {
       this.difyApiUrl = difyConfig.apiUrl;
       this.flow1ApiKey = difyConfig.flow1ApiKey;
       this.flow2ApiKey = difyConfig.flow2ApiKey;
+      this.flow3ApiKey = difyConfig.flow3ApiKey;
       this.flow1WorkflowId = difyConfig.flow1Id;
       this.flow2WorkflowId = difyConfig.flow2Id;
+      this.flow3WorkflowId = difyConfig.flow3Id;
       this.useMock = difyConfig.useMock;
     } catch (error) {
       console.warn('⚠️ Dify not configured:', error.message);
@@ -139,18 +142,22 @@ class DifyService {
     }
   }
 
-  async processFlow3(panels, panel, nextPanelData) {
+  async processFlow3(panels, panel, previousPanelData,nextPanelData) {
     try {
       console.log(`🔄 Processing Flow 3 (Panel) for page ${panel.index}...`);
+
+      const previouspanel = panel.index === 1 ? previousPanelData : panels.find(p => p.index === panel.index - 1)
+      const nextpanel = panel.index !== panels.length ? panels.find(p => p.index === panel.index + 1) : nextPanelData
+
       
       const result = await this.callDifyWorkflow(
         this.flow3WorkflowId, 
         {
           index: panel.index,
           description: panel.description,
-          type: panel.type,
-          nextPanel: panel.index !== panels.length ? panels.find(p => p.index === panel.index + 1) : null,
-          previousPanel: panel.index === 1 ? null : panels.find(p => p.index === panel.index - 1),
+          type: panel.type.join(','),
+          nextPanel: JSON.stringify(nextpanel),
+          previousPanel: JSON.stringify(previouspanel),
           place: panel.place,
         },
         'user-001',
@@ -163,9 +170,9 @@ class DifyService {
         ? JSON.parse(result.data.outputs.structured_output) 
         : result.data.outputs.structured_output;
 
-      this.validateFlow2Output(parsedData);
+      // Flow 3 outputs composition data, not Flow 2 format
       
-      console.log(`✅ Flow 3 completed for panel ${panel}`);
+      console.log(`✅ Flow 3 completed for panel ${panel.index}`);
       return parsedData;
     } catch (error) {
       console.error(`❌ Flow 3 error for panel ${panel.index}:`, error);
@@ -363,6 +370,27 @@ class DifyService {
       page: pageData.page,
       instructions: continuityNote ? `${baseInstructions}（${continuityNote}）` : baseInstructions
     };
+  }
+
+  getMockFlow3Output(panel) {
+    return {
+      cameraAngle: this.getRandomCameraAngle(),
+      composition: `コマ${panel.index}の構図: ${panel.description}`,
+      visualEffects: this.getRandomVisualEffect(),
+      characterDetails: "キャラクターの詳細な描写",
+      background: "背景の詳細",
+      backgroundDetails: "背景の詳細な説明"
+    };
+  }
+
+  getRandomCameraAngle() {
+    const angles = ["俯瞰", "仰角", "水平", "クローズアップ", "ロングショット"];
+    return angles[Math.floor(Math.random() * angles.length)];
+  }
+
+  getRandomVisualEffect() {
+    const effects = ["動線", "集中線", "効果音", "背景ぼかし", "なし"];
+    return effects[Math.floor(Math.random() * effects.length)];
   }
 }
 

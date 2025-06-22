@@ -22,10 +22,11 @@ class DifyIntegrationService {
       const processedScenes = [];
       let previousInstructions = '';
 
+      // First pass: Process all pages through Flow 2
+      console.log('📄 Processing all pages through Flow 2...');
+      const allPagesFlow2Results = [];
+      
       for (const scene of flow1Result.scene) {
-        const processedContents = [];
-         
-        
         for (const content of scene.contents) {
           let flow2Result;
           if (this.difyService.useMock || useMockDify) {
@@ -35,32 +36,10 @@ class DifyIntegrationService {
             flow2Result = await this.difyService.processFlow2(content, previousInstructions);
           }
 
-          console.log(`📐 Processing panels through Flow 3 for page ${content.page}...`);
-          const processedPanels = [];
-          
-          for (const panel of flow2Result.panels) {
-            let flow3Result;
-            if (this.difyService.useMock || useMockDify) {
-              console.log(`💡 Using mock Dify Flow 3 for panel ${panel.index}`);
-              flow3Result = this.difyService.getMockFlow3Output(panel);
-            } else {
-              flow3Result = await this.difyService.processFlow3( flow2Result,panel);
-            }
-
-            processedPanels.push({
-              ...panel,
-              composition: flow3Result
-            });
-
-            await this.delay(50);
-          }
-
-          processedContents.push({
-            ...content,
-            panelLayout: {
-              ...flow2Result,
-              panels: processedPanels
-            }
+          allPagesFlow2Results.push({
+            sceneIndex: flow1Result.scene.indexOf(scene),
+            content: content,
+            flow2Result: flow2Result
           });
 
           // Update previousInstructions for the next page
@@ -69,6 +48,61 @@ class DifyIntegrationService {
           }
 
           await this.delay(100);
+        }
+      }
+
+      // Second pass: Process all panels through Flow 3 with access to previous page data
+      console.log('📐 Processing all panels through Flow 3...');
+      for (let i = 0; i < allPagesFlow2Results.length; i++) {
+        const currentPageData = allPagesFlow2Results[i];
+        const previousPagePanelLast = i > 0 ? allPagesFlow2Results[i - 1].flow2Result.panels[allPagesFlow2Results[i - 1].flow2Result.panels.length - 1] : null;
+        const nextPagePanelFirst = i < allPagesFlow2Results.length - 1 ? allPagesFlow2Results[i + 1].flow2Result.panels[0] : null;
+        
+        console.log(`📐 Processing panels for page ${currentPageData.content.page}...`);
+        const processedPanels = [];
+        
+        for (const panel of currentPageData.flow2Result.panels) {
+          let flow3Result;
+          if (this.difyService.useMock || useMockDify) {
+            console.log(`💡 Using mock Dify Flow 3 for panel ${panel.index}`);
+            flow3Result = this.difyService.getMockFlow3Output(panel);
+          } else {
+            flow3Result = await this.difyService.processFlow3(
+              currentPageData.flow2Result.panels,
+              panel,
+              previousPagePanelLast,nextPagePanelFirst
+            );
+          }
+
+          processedPanels.push({
+            ...panel,
+            composition: flow3Result
+          });
+
+          await this.delay(50);
+        }
+
+        // Update the flow2Result with processed panels
+        currentPageData.flow2Result.panels = processedPanels;
+      }
+
+      // Third pass: Reconstruct the scene structure
+      console.log('📦 Reconstructing scene structure...');
+      for (const scene of flow1Result.scene) {
+        const processedContents = [];
+        
+        for (const content of scene.contents) {
+          const pageData = allPagesFlow2Results.find(p => 
+            p.sceneIndex === flow1Result.scene.indexOf(scene) && 
+            p.content.page === content.page
+          );
+          
+          if (pageData) {
+            processedContents.push({
+              ...content,
+              panelLayout: pageData.flow2Result
+            });
+          }
         }
 
         processedScenes.push({
