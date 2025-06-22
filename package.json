@@ -12,17 +12,26 @@
     "install:all": "npm install && cd client && npm install"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "canvas": "^2.11.2",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
     "dotenv": "^16.3.1",
-    "openai": "^4.20.1"
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0",
+    "openai": "^4.20.1",
+    "sharp": "^0.32.6"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1",
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.1"
   },
-  "keywords": ["manga", "comic", "storyboard", "ai", "generator"],
+  "keywords": [
+    "manga",
+    "comic",
+    "storyboard",
+    "ai",
+    "generator"
+  ],
   "author": "",
   "license": "MIT"
 }

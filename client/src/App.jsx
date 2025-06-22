@@ -9,12 +9,12 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleGenerateStoryboard = async (text, useMockAI = false) => {
+  const handleGenerateStoryboard = async (text, useMockAI = false, pageCount = 8) => {
     setLoading(true);
     setError(null);
     
     try {
-      const result = await generateStoryboard(text, useMockAI);
+      const result = await generateStoryboard(text, useMockAI, pageCount);
       setStoryboard(result);
     } catch (err) {
       setError(err.message || '生成に失敗しました');

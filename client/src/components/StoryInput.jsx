@@ -4,11 +4,19 @@ import './StoryInput.css';
 const StoryInput = ({ onGenerate, loading, onClear }) => {
   const [text, setText] = useState('');
   const [useMockAI, setUseMockAI] = useState(false);
+  const [pageCount, setPageCount] = useState(8);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (text.trim() && !loading) {
-      onGenerate(text.trim(), useMockAI);
+      onGenerate(text.trim(), useMockAI, pageCount);
+    }
+  };
+
+  const handlePageCountChange = (e) => {
+    const value = e.target.value;
+    if (value === '' || (/^\d+$/.test(value) && parseInt(value) > 0 && parseInt(value) <= 50)) {
+      setPageCount(value === '' ? '' : parseInt(value));
     }
   };
 
@@ -55,19 +63,34 @@ const StoryInput = ({ onGenerate, loading, onClear }) => {
             <span className="char-count">
               {text.length} / 10000 文字
             </span>
-            <div className="mock-toggle">
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={useMockAI}
-                  onChange={(e) => setUseMockAI(e.target.checked)}
-                  disabled={loading}
-                />
-                <span className="toggle-slider"></span>
-                <span className="toggle-label">
-                  {useMockAI ? '💡 モック生成' : '🤖 AI生成'}
-                </span>
-              </label>
+            <div className="page-count-input">
+              <label htmlFor="pageCount">📄 ページ数:</label>
+              <input
+                id="pageCount"
+                type="number"
+                value={pageCount}
+                onChange={handlePageCountChange}
+                disabled={loading}
+                min="1"
+                max="50"
+                className="page-count-field"
+              />
+            </div>
+            <div className="toggles-container">
+              <div className="mock-toggle">
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={useMockAI}
+                    onChange={(e) => setUseMockAI(e.target.checked)}
+                    disabled={loading}
+                  />
+                  <span className="toggle-slider"></span>
+                  <span className="toggle-label">
+                    {useMockAI ? '💡 モック生成' : '🤖 AI生成 (Difyフロー)'}
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
           

@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
+
+// Load environment configuration (handles .env files and validation)
+const envConfig = require('./config/env');
 
 const CSVReader = require('./services/csvReader');
 const apiRoutes = require('./routes/api');

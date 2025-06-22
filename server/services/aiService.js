@@ -1,58 +1,72 @@
 const OpenAI = require('openai');
+const DifyIntegrationService = require('./difyIntegrationService');
+const envConfig = require('../config/env');
 
 class AIService {
   constructor(csvReader) {
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    try {
+      const openaiKey = envConfig.getOpenAIKey();
+      this.openai = new OpenAI({
+        apiKey: openaiKey,
+      });
+    } catch (error) {
+      console.warn('⚠️ OpenAI not configured:', error.message);
+      this.openai = null;
+    }
+    
     this.csvReader = csvReader;
+    this.difyIntegration = new DifyIntegrationService(csvReader);
   }
 
-  async analyzeStoryText(text, forceMock = false) {
+  async analyzeStoryText(text, forceMock = false, pageCount = 8) {
     try {
-      // テスト用: APIクォータ不足時のモックレスポンス
-      if (process.env.USE_MOCK_AI === 'true' || forceMock) {
-        console.log('💡 Using mock analysis');
-        return this.getMockAnalysis(text);
-      }
-
-      const contextRules = this.csvReader.getMangaContext();
-      const characterPatterns = this.csvReader.getCharacterPatterns();
-      const layoutTemplates = this.csvReader.getLayoutTemplates();
-
-      const systemPrompt = this.buildSystemPrompt(contextRules, characterPatterns, layoutTemplates);
-      
-      const completion = await this.openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt
-          },
-          {
-            role: "user",
-            content: `以下の文章を漫画のネーム用に解析してください:\n\n${text}`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000
-      });
-
-      const analysisResult = JSON.parse(completion.choices[0].message.content);
-      return this.processAnalysisResult(analysisResult);
+      // Difyワークフローは必須フロー（AI生成時は常に使用）
+      console.log('🔄 Using Dify workflow for analysis');
+      return await this.analyzeWithDifyWorkflow(text, forceMock, pageCount);
 
     } catch (error) {
       console.error('AI analysis error:', error);
-      // APIエラー時は自動的にモックを使用
-      if (error.status === 429 || error.message.includes('quota')) {
-        console.log('🔄 Falling back to mock analysis due to API quota');
-        return this.getMockAnalysis(text);
+      // APIエラーまたはデータ構造エラー時は自動的にモックを使用
+      if (error.status === 429 || 
+          error.message.includes('quota') || 
+          error.message.includes('Invalid Flow 1 output') ||
+          error.message.includes('Dify API error')) {
+        console.log('🔄 Falling back to mock analysis due to:', error.message);
+        return this.getMockAnalysis(text, pageCount);
       }
       throw new Error('文章解析に失敗しました: ' + error.message);
     }
   }
 
-  getMockAnalysis(text) {
+  async analyzeWithDifyWorkflow(text, forceMock = false, pageCount = 8) {
+    try {
+      console.log('🚀 Starting Dify workflow analysis...');
+      
+      // モック判定: 環境変数またはforceMockパラメータ
+      const useMock = process.env.USE_MOCK_DIFY === 'true' || forceMock;
+      
+      // Step 1: Difyワークフローで処理
+      const difyResult = await this.difyIntegration.processUserInput(text, useMock, pageCount);
+      
+      // Step 2: OpenAIで後処理 (オプション)
+      let finalResult = difyResult;
+      if (process.env.USE_OPENAI_POSTPROCESS === 'true') {
+        finalResult = await this.difyIntegration.postProcessWithOpenAI(difyResult, this);
+      }
+      
+      // Step 3: レガシー形式に変換
+      const legacyFormat = this.difyIntegration.convertToLegacyFormat(finalResult);
+      
+      console.log('✅ Dify workflow analysis completed');
+      return legacyFormat;
+
+    } catch (error) {
+      console.error('❌ Dify workflow analysis failed:', error);
+      throw error;
+    }
+  }
+
+  getMockAnalysis(text, pageCount = 8) {
     // 入力テキストから簡単な解析を行ってモックデータを生成
     const sentences = text.split(/[。！？\n]/).filter(s => s.trim());
     const hasDialogue = /「.*」|『.*』/.test(text);
@@ -69,7 +83,7 @@ class AIService {
         }
       ],
       overall_pacing: "中程度",
-      page_count_estimate: Math.ceil(sentences.length / 4)
+      page_count_estimate: pageCount
     };
 
     // 文章から簡単にパネルを生成
@@ -160,7 +174,7 @@ ${layoutTemplates.map(template => `- ${template.template_name}: ${template.layou
       scenes_with_rules: []
     };
 
-    processedResult.scenes.forEach((scene, sceneIndex) => {
+    processedResult.scenes.forEach((scene) => {
       processedResult.panels_total += scene.panels.length;
       
       // 各シーンに適用されたルールを記録

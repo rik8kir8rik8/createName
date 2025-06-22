@@ -1,12 +1,12 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-export const generateStoryboard = async (text, useMockAI = false) => {
+export const generateStoryboard = async (text, useMockAI = false, pageCount = 8) => {
   const response = await fetch(`${API_BASE_URL}/generate-storyboard`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ text, useMockAI }),
+    body: JSON.stringify({ text, useMockAI, pageCount }),
   });
 
   if (!response.ok) {
@@ -33,6 +33,23 @@ export const searchContext = async (condition) => {
 
   if (!response.ok) {
     throw new Error('Failed to search context');
+  }
+
+  return await response.json();
+};
+
+export const generatePageImages = async (storyboard) => {
+  const response = await fetch(`${API_BASE_URL}/generate-page-images`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ storyboard }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to generate page images');
   }
 
   return await response.json();

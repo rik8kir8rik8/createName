@@ -1,10 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './StoryboardDisplay.css';
-import MangaPageLayout from './MangaPageLayout';
+import { generatePageImages } from '../services/api';
 
 const StoryboardDisplay = ({ storyboard, loading }) => {
-  const [editingPanel, setEditingPanel] = useState(null);
-  const [editMode, setEditMode] = useState(false);
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [pageImages, setPageImages] = useState(null);
+  const [imageLoading, setImageLoading] = useState(false);
+
+  // Reset to first page when new storyboard is loaded
+  useEffect(() => {
+    if (storyboard) {
+      setCurrentPageIndex(0);
+      setPageImages(null);
+    }
+  }, [storyboard]);
+
+  // Auto-generate page images when storyboard is loaded
+  useEffect(() => {
+    if (storyboard && !pageImages && !imageLoading) {
+      handleGeneratePageImages();
+    }
+  }, [storyboard]);
+
+  // Generate page images
+  const handleGeneratePageImages = async () => {
+    if (!storyboard || imageLoading) return;
+    
+    setImageLoading(true);
+    try {
+      const result = await generatePageImages(storyboard.storyboard);
+      setPageImages(result.images);
+    } catch (error) {
+      console.error('Failed to generate page images:', error);
+      alert('画像生成に失敗しました: ' + error.message);
+    } finally {
+      setImageLoading(false);
+    }
+  };
   if (loading) {
     return (
       <div className="storyboard-display">
@@ -29,6 +61,20 @@ const StoryboardDisplay = ({ storyboard, loading }) => {
   }
 
   const { storyboard: data, metadata } = storyboard;
+  const totalPages = data.scenes.length;
+  const currentScene = data.scenes[currentPageIndex];
+
+  const handlePreviousPage = () => {
+    if (currentPageIndex > 0) {
+      setCurrentPageIndex(currentPageIndex - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPageIndex < totalPages - 1) {
+      setCurrentPageIndex(currentPageIndex + 1);
+    }
+  };
 
   return (
     <div className="storyboard-display">
@@ -41,59 +87,69 @@ const StoryboardDisplay = ({ storyboard, loading }) => {
             <span>推定ページ数: {data.page_count_estimate || 'N/A'}</span>
           </div>
           <div className="mode-controls">
-            <button 
-              className={`mode-btn ${!editMode ? 'active' : ''}`}
-              onClick={() => setEditMode(false)}
-            >
-              👁️ 表示
-            </button>
-            <button 
-              className={`mode-btn ${editMode ? 'active' : ''}`}
-              onClick={() => setEditMode(true)}
-            >
-              ✏️ 編集
-            </button>
+            {imageLoading && (
+              <div className="image-loading">
+                🔄 画像生成中...
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="manga-pages-container">
-        {data.scenes.map((scene, sceneIndex) => (
-          <div key={sceneIndex} className="manga-page">
-            <div className="page-header">
-              <span className="page-number">ページ {scene.scene_number}</span>
-              <div className="scene-info">
-                <span className="scene-description">{scene.description}</span>
-                <span className="emotion-tone">{scene.emotion_tone}</span>
-              </div>
-            </div>
+      {/* Page Navigation Controls */}
+      <div className="page-navigation">
+        <button 
+          className="nav-btn prev-btn"
+          onClick={handlePreviousPage}
+          disabled={currentPageIndex === 0}
+        >
+          ← 前のページ
+        </button>
+        
+        <div className="page-indicator">
+          <span className="current-page">ページ {currentPageIndex + 1}</span>
+          <span className="page-separator"> / </span>
+          <span className="total-pages">{totalPages}</span>
+        </div>
+        
+        <button 
+          className="nav-btn next-btn"
+          onClick={handleNextPage}
+          disabled={currentPageIndex === totalPages - 1}
+        >
+          次のページ →
+        </button>
+      </div>
 
-            <div className="page-content">
-              <MangaPageLayout 
-                panels={scene.panels}
-                sceneIndex={sceneIndex}
-                layoutTemplate={scene.layout_template}
-                editMode={editMode}
-                onPanelEdit={setEditingPanel}
+      <div className="manga-pages-container">
+        {pageImages ? (
+          <div className="manga-page-image">
+            <div className="page-image-container">
+              <img 
+                src={pageImages[currentPageIndex]?.imageData} 
+                alt={`ページ ${currentPageIndex + 1}`}
+                className="page-image"
               />
             </div>
-
-            {scene.applied_rules && scene.applied_rules.length > 0 && (
-              <div className="applied-rules">
-                <details>
-                  <summary>適用されたルール ({scene.applied_rules.length})</summary>
-                  <ul>
-                    {scene.applied_rules.slice(0, 3).map((rule, ruleIndex) => (
-                      <li key={ruleIndex} className={`rule-${rule.priority}`}>
-                        {rule.description}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              </div>
-            )}
+            <div className="page-image-info">
+              <h3>ページ {pageImages[currentPageIndex]?.pageNumber}</h3>
+              <p>シーン: {pageImages[currentPageIndex]?.sceneInfo.description}</p>
+              <p>感情: {pageImages[currentPageIndex]?.sceneInfo.emotion_tone}</p>
+              <p>レイアウト: {pageImages[currentPageIndex]?.sceneInfo.layout_template}</p>
+              <p>コマ数: {pageImages[currentPageIndex]?.sceneInfo.panels_count}</p>
+            </div>
           </div>
-        ))}
+        ) : imageLoading ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>画像を生成中...</p>
+          </div>
+        ) : (
+          <div className="empty-state">
+            <div className="empty-icon">🖼️</div>
+            <p>画像を生成できませんでした</p>
+          </div>
+        )}
       </div>
 
       <div className="storyboard-footer">
@@ -110,16 +166,6 @@ const StoryboardDisplay = ({ storyboard, loading }) => {
         </div>
       </div>
 
-      {/* パネル編集モーダル */}
-      {editingPanel && (
-        <div className="edit-modal-placeholder">
-          <div className="modal-content">
-            <h3>パネル編集</h3>
-            <p>編集機能は次のアップデートで実装予定です</p>
-            <button onClick={() => setEditingPanel(null)}>閉じる</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

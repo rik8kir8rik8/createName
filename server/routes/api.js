@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const AIService = require('../services/aiService');
+const ImageGenerationService = require('../services/imageGenerationService');
 
 module.exports = (csvReader) => {
   const aiService = new AIService(csvReader);
+  const imageService = new ImageGenerationService();
 
   // Health check
   router.get('/health', (req, res) => {
@@ -41,7 +43,7 @@ module.exports = (csvReader) => {
   // Generate manga storyboard
   router.post('/generate-storyboard', async (req, res) => {
     try {
-      const { text, useMockAI } = req.body;
+      const { text, useMockAI, pageCount = 8 } = req.body;
       
       if (!text || typeof text !== 'string' || text.trim().length === 0) {
         return res.status(400).json({ error: 'Valid text is required' });
@@ -53,8 +55,10 @@ module.exports = (csvReader) => {
 
       console.log('🎨 Generating storyboard for text length:', text.length);
       console.log('📊 Using mock AI:', useMockAI);
+      console.log('📄 Page count:', pageCount);
+      console.log('🔧 Using Dify workflow: true (always enabled)');
       
-      const storyboard = await aiService.analyzeStoryText(text, useMockAI);
+      const storyboard = await aiService.analyzeStoryText(text, useMockAI, pageCount);
       
       console.log('✅ Storyboard generated successfully');
       res.json({
@@ -72,6 +76,45 @@ module.exports = (csvReader) => {
       console.error('❌ Error generating storyboard:', error);
       res.status(500).json({ 
         error: 'Failed to generate storyboard', 
+        message: error.message 
+      });
+    }
+  });
+
+  // Generate page images for storyboard
+  router.post('/generate-page-images', async (req, res) => {
+    try {
+      const { storyboard } = req.body;
+      
+      if (!storyboard || !storyboard.scenes) {
+        return res.status(400).json({ error: 'Valid storyboard data is required' });
+      }
+
+      console.log('🖼️ Generating page images for', storyboard.scenes.length, 'pages');
+      
+      const pageImages = await imageService.generateAllPageImages(storyboard);
+      
+      // Convert image buffers to base64 for JSON response
+      const imagesData = pageImages.map(page => ({
+        pageNumber: page.pageNumber,
+        imageData: `data:image/png;base64,${page.imageBuffer.toString('base64')}`,
+        sceneInfo: page.sceneInfo
+      }));
+      
+      console.log('✅ Page images generated successfully');
+      res.json({
+        success: true,
+        images: imagesData,
+        metadata: {
+          total_pages: pageImages.length,
+          generated_at: new Date().toISOString()
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Error generating page images:', error);
+      res.status(500).json({ 
+        error: 'Failed to generate page images', 
         message: error.message 
       });
     }
