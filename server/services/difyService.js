@@ -397,8 +397,7 @@ class DifyService {
   }
 
   getMockFlow3Output() {
-    return 
-      [
+    return [
       {
         "index": 1,
           "cameraAngle": "middle",

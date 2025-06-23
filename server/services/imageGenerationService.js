@@ -687,9 +687,16 @@ class ImageGenerationService {
    */
   async generateAllPageImages(storyboard) {
     const images = [];
+    
+    console.log(`🖼️ Starting image generation for ${storyboard.scenes.length} scenes`);
 
     for (let i = 0; i < storyboard.scenes.length; i++) {
       const scene = storyboard.scenes[i];
+      console.log(`🖼️ Generating page ${i + 1} with ${scene.panels.length} panels`);
+      scene.panels.forEach((panel, idx) => {
+        console.log(`🖼️ Panel ${idx + 1} has composition_data:`, !!panel.composition_data);
+      });
+      
       const pageImage = await this.generatePageImage(scene, i + 1);
 
       images.push({

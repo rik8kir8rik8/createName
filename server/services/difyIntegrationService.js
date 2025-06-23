@@ -76,14 +76,36 @@ class DifyIntegrationService {
         let flow3Result;
 
         if (this.difyService.useMock || useMockDify) {
+          console.log(`💡 Using mock Dify Flow 3 for page ${currentPageData.content.page}`);
           flow3Result = this.difyService.getMockFlow3Output();
-
+          
+          // モックFlow3データ（配列）を各パネルに割り当て
+          if (!flow3Result || !Array.isArray(flow3Result) || flow3Result.length === 0) {
+            throw new Error('Mock Flow 3 data is invalid or empty');
+          }
+          
+          for (let j = 0; j < currentPageData.flow2Result.panels.length; j++) {
+            const panel = currentPageData.flow2Result.panels[j];
+            const compositionData = flow3Result[j] || flow3Result[0]; // パネル数より少ない場合は最初のデータを使用
+            
+            console.log(`💡 Assigning mock composition data to panel ${panel.index}:`, compositionData);
+            
+            processedPanels.push({
+              ...panel,
+              composition: compositionData,
+            });
+          }
+          
+          console.log(`💡 Mock processed panels count: ${processedPanels.length}`);
         } else {
           for (const panel of currentPageData.flow2Result.panels) {
-            console.log(`💡 Using mock Dify Flow 3 for panel ${panel.index}`);
-            flow3Result = await this.difyService.processFlow3(              currentPageData.flow2Result.panels,
+            console.log(`🔄 Processing real Dify Flow 3 for panel ${panel.index}`);
+            flow3Result = await this.difyService.processFlow3(
+              currentPageData.flow2Result.panels,
               panel,
-              previousPagePanelLast,nextPagePanelFirst)
+              previousPagePanelLast,
+              nextPagePanelFirst
+            );
             
             processedPanels.push({
               ...panel,
@@ -92,7 +114,6 @@ class DifyIntegrationService {
 
             await this.delay(50);
           }
-          ;
         }
 
         // Update the flow2Result with processed panels
@@ -191,32 +212,39 @@ class DifyIntegrationService {
 
     for (const scene of difyResult.processedScenes) {
       for (const content of scene.contents) {
-        const panels = content.panelLayout.panels.map(panel => ({
-          panel_number: panel.index,
-          size: this.determinePanelSize(panel.type),
-          type: panel.type[0] || 'narration',
-          content: {
-            dialogue: this.extractDialogue(content.text),
-            narration: this.extractNarration(content.text),
-            characters: this.createCharacters(content.characterEmotions),
-            background: content.place,
-          },
-          visual_notes: panel.description,
-          composition_data: panel.composition
-            ? {
-                cameraAngle: panel.composition.cameraAngle,
-                composition: panel.composition.composition,
-                visualEffects: panel.composition.visualEffects,
-                characterDetails: panel.composition.characterDetails,
-                background: panel.composition.background,
-                backgroundDetails: panel.composition.backgroundDetails,
-              }
-            : null,
+        const panels = content.panelLayout.panels.map(panel => {
+          console.log(`🔄 Converting panel ${panel.index} - has composition:`, !!panel.composition);
+          if (panel.composition) {
+            console.log(`🔄 Panel ${panel.index} composition data:`, panel.composition);
+          }
+          
+          return {
+            panel_number: panel.index,
+            size: this.determinePanelSize(panel.type),
+            type: panel.type[0] || 'narration',
+            content: {
+              dialogue: this.extractDialogue(content.text),
+              narration: this.extractNarration(content.text),
+              characters: this.createCharacters(content.characterEmotions),
+              background: content.place,
+            },
+            visual_notes: panel.description,
+            composition_data: panel.composition
+              ? {
+                  cameraAngle: panel.composition.cameraAngle,
+                  composition: panel.composition.composition,
+                  visualEffects: panel.composition.visualEffects,
+                  characterDetails: panel.composition.characterDetails,
+                  background: panel.composition.background,
+                  backgroundDetails: panel.composition.backgroundDetails,
+                }
+              : null,
           dify_data: {
             original_panel: panel,
             page_info: content,
           },
-        }));
+        };
+        });
 
         scenes.push({
           scene_number: scenes.length + 1,
