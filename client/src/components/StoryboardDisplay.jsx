@@ -25,7 +25,7 @@ const StoryboardDisplay = ({ storyboard, loading }) => {
   // Generate page images
   const handleGeneratePageImages = async () => {
     if (!storyboard || imageLoading) return;
-    
+
     setImageLoading(true);
     try {
       const result = await generatePageImages(storyboard.storyboard);
@@ -54,7 +54,9 @@ const StoryboardDisplay = ({ storyboard, loading }) => {
         <div className="empty-state">
           <div className="empty-icon">📖</div>
           <p>生成されたネームがここに表示されます</p>
-          <small>左側で文章を入力して「ネームを生成」ボタンを押してください</small>
+          <small>
+            左側で文章を入力して「ネームを生成」ボタンを押してください
+          </small>
         </div>
       </div>
     );
@@ -88,9 +90,7 @@ const StoryboardDisplay = ({ storyboard, loading }) => {
           </div>
           <div className="mode-controls">
             {imageLoading && (
-              <div className="image-loading">
-                🔄 画像生成中...
-              </div>
+              <div className="image-loading">🔄 画像生成中...</div>
             )}
           </div>
         </div>
@@ -98,21 +98,21 @@ const StoryboardDisplay = ({ storyboard, loading }) => {
 
       {/* Page Navigation Controls */}
       <div className="page-navigation">
-        <button 
+        <button
           className="nav-btn prev-btn"
           onClick={handlePreviousPage}
           disabled={currentPageIndex === 0}
         >
           ← 前のページ
         </button>
-        
+
         <div className="page-indicator">
           <span className="current-page">ページ {currentPageIndex + 1}</span>
           <span className="page-separator"> / </span>
           <span className="total-pages">{totalPages}</span>
         </div>
-        
-        <button 
+
+        <button
           className="nav-btn next-btn"
           onClick={handleNextPage}
           disabled={currentPageIndex === totalPages - 1}
@@ -125,18 +125,27 @@ const StoryboardDisplay = ({ storyboard, loading }) => {
         {pageImages ? (
           <div className="manga-page-image">
             <div className="page-image-container">
-              <img 
-                src={pageImages[currentPageIndex]?.imageData} 
+              <img
+                src={pageImages[currentPageIndex]?.imageData}
                 alt={`ページ ${currentPageIndex + 1}`}
                 className="page-image"
               />
             </div>
             <div className="page-image-info">
               <h3>ページ {pageImages[currentPageIndex]?.pageNumber}</h3>
-              <p>シーン: {pageImages[currentPageIndex]?.sceneInfo.description}</p>
-              <p>感情: {pageImages[currentPageIndex]?.sceneInfo.emotion_tone}</p>
-              <p>レイアウト: {pageImages[currentPageIndex]?.sceneInfo.layout_template}</p>
-              <p>コマ数: {pageImages[currentPageIndex]?.sceneInfo.panels_count}</p>
+              <p>
+                シーン: {pageImages[currentPageIndex]?.sceneInfo.description}
+              </p>
+              <p>
+                感情: {pageImages[currentPageIndex]?.sceneInfo.emotion_tone}
+              </p>
+              <p>
+                レイアウト:{' '}
+                {pageImages[currentPageIndex]?.sceneInfo.layout_template}
+              </p>
+              <p>
+                コマ数: {pageImages[currentPageIndex]?.sceneInfo.panels_count}
+              </p>
             </div>
           </div>
         ) : imageLoading ? (
@@ -157,15 +166,10 @@ const StoryboardDisplay = ({ storyboard, loading }) => {
           <strong>全体のペース感:</strong> {data.overall_pacing}
         </div>
         <div className="export-controls">
-          <button className="export-btn">
-            📄 テキストでエクスポート
-          </button>
-          <button className="export-btn">
-            🖼️ 画像でエクスポート
-          </button>
+          <button className="export-btn">📄 テキストでエクスポート</button>
+          <button className="export-btn">🖼️ 画像でエクスポート</button>
         </div>
       </div>
-
     </div>
   );
 };

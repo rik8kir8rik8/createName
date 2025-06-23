@@ -9,10 +9,14 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleGenerateStoryboard = async (text, useMockAI = false, pageCount = 8) => {
+  const handleGenerateStoryboard = async (
+    text,
+    useMockAI = false,
+    pageCount = 8
+  ) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await generateStoryboard(text, useMockAI, pageCount);
       setStoryboard(result);
@@ -39,7 +43,7 @@ function App() {
       <main className="app-main">
         <div className="app-container">
           <div className="input-section">
-            <StoryInput 
+            <StoryInput
               onGenerate={handleGenerateStoryboard}
               loading={loading}
               onClear={handleClear}
@@ -52,10 +56,7 @@ function App() {
           </div>
 
           <div className="output-section">
-            <StoryboardDisplay 
-              storyboard={storyboard}
-              loading={loading}
-            />
+            <StoryboardDisplay storyboard={storyboard} loading={loading} />
           </div>
         </div>
       </main>

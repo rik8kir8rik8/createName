@@ -55,7 +55,7 @@
     padding: 8px;
     gap: 6px;
   }
-  
+
   .layout-standard-4,
   .layout-vertical-story,
   .layout-action-sequence,
@@ -63,7 +63,7 @@
     grid-template-columns: 1fr;
     grid-template-rows: repeat(auto-fit, 1fr);
   }
-  
+
   .layout-intro-page .manga-panel:first-child {
     grid-column: 1;
   }

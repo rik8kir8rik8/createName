@@ -208,11 +208,11 @@
   .panels-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .panel-large {
     grid-column: span 1;
   }
-  
+
   .panel-characters {
     flex-direction: column;
   }

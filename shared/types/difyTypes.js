@@ -1,245 +1,205 @@
 const DifyFlow1Schema = {
-  type: "object",
+  type: 'object',
   properties: {
     scene: {
-      type: "array",
+      type: 'array',
       items: {
-        type: "object",
+        type: 'object',
         properties: {
           pagesNum: {
-            type: "number"
+            type: 'number',
           },
           contents: {
-            type: "array",
+            type: 'array',
             items: {
-              type: "object",
+              type: 'object',
               properties: {
                 page: {
-                  type: "integer"
+                  type: 'integer',
                 },
                 elements: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    type: "string",
+                    type: 'string',
                     enum: [
-                      "introduction",
-                      "stimulation", 
-                      "problem",
-                      "change",
-                      "solution",
-                      "emotion",
-                      "interval"
-                    ]
-                  }
+                      'introduction',
+                      'stimulation',
+                      'problem',
+                      'change',
+                      'solution',
+                      'emotion',
+                      'interval',
+                    ],
+                  },
                 },
                 characterEmotions: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    type: "string",
+                    type: 'string',
                     enum: [
-                      "joy",
-                      "happy",
-                      "sad",
-                      "painful",
-                      "despair",
-                      "fun",
-                      "anger",
-                      "laughter",
-                      "tokimeki",
-                      "irritation",
-                      "surprise",
-                      "flat"
-                    ]
-                  }
+                      'joy',
+                      'happy',
+                      'sad',
+                      'painful',
+                      'despair',
+                      'fun',
+                      'anger',
+                      'laughter',
+                      'tokimeki',
+                      'irritation',
+                      'surprise',
+                      'flat',
+                    ],
+                  },
                 },
                 text: {
-                  type: "string"
+                  type: 'string',
                 },
                 concept: {
-                  type: "string"
+                  type: 'string',
                 },
                 place: {
-                  type: "string"
-                }
+                  type: 'string',
+                },
               },
               required: [
-                "page",
-                "elements",
-                "characterEmotions",
-                "text",
-                "concept",
-                "place"
+                'page',
+                'elements',
+                'characterEmotions',
+                'text',
+                'concept',
+                'place',
               ],
-              additionalProperties: false
-            }
+              additionalProperties: false,
+            },
           },
           isExcitement: {
-            type: "number",
-            enum: [0, 1]
-          }
+            type: 'number',
+            enum: [0, 1],
+          },
         },
-        required: [
-          "pagesNum",
-          "contents",
-          "isExcitement"
-        ],
-        additionalProperties: false
-      }
-    }
+        required: ['pagesNum', 'contents', 'isExcitement'],
+        additionalProperties: false,
+      },
+    },
   },
-  required: ["scene"],
-  additionalProperties: false
+  required: ['scene'],
+  additionalProperties: false,
 };
 
 const DifyFlow2Schema = {
-  "type": "object",
-  "properties": {
-    "panels": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "index": {
-            "type": "number",
-            "description": "index"
+  type: 'object',
+  properties: {
+    panels: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          index: {
+            type: 'number',
+            description: 'index',
           },
-          "description": {
-            "type": "string",
-            "description": "description"
+          description: {
+            type: 'string',
+            description: 'description',
           },
-          "type": {
-            "type": "array",
-            "enum": [
-              "event",
-              "situation",
-              "reaction",
-              "turning",
-              "move"
-            ],
-            "items": {
-              "type": "string"
-            }
+          type: {
+            type: 'array',
+            enum: ['event', 'situation', 'reaction', 'turning', 'move'],
+            items: {
+              type: 'string',
+            },
           },
-          "place": {
-            "type": "string"
-          }
+          place: {
+            type: 'string',
+          },
         },
-        "required": [
-          "index",
-          "description",
-          "type",
-          "place"
-        ],
-        "additionalProperties": false
-      }
+        required: ['index', 'description', 'type', 'place'],
+        additionalProperties: false,
+      },
     },
-    "page": {
-      "type": "number"
+    page: {
+      type: 'number',
     },
-    "instructions": {
-      "type": "string"
-    }
+    instructions: {
+      type: 'string',
+    },
   },
-  "required": [
-    "panels",
-    "page"
-  ],
-  "additionalProperties": false
+  required: ['panels', 'page'],
+  additionalProperties: false,
 };
 
 const DifyFlow3Schema = {
-  "type": "object",
-  "properties": {
-    "cameraAngle": {
-      "type": "string",
-      "enum": [
-        "near",
-        "middle",
-        "far"
-      ]
+  type: 'object',
+  properties: {
+    cameraAngle: {
+      type: 'string',
+      enum: ['near', 'middle', 'far'],
     },
-    "composition": {
-      "type": "string"
+    composition: {
+      type: 'string',
     },
-    "visualEffects": {
-      "type": "string",
-      "enum": [
-        "normal",
-        "emotional",
-        "deformed",
-        "past"
-      ]
+    visualEffects: {
+      type: 'string',
+      enum: ['normal', 'emotional', 'deformed', 'past'],
     },
-    "characterDetails": {
-      "type": "string"
+    characterDetails: {
+      type: 'string',
     },
-    "background": {
-      "type": "number",
-      "enum": [
-        0,
-        1
-      ]
+    background: {
+      type: 'number',
+      enum: [0, 1],
     },
-    "backgroundDetails": {
-      "type": "string"
-    }
+    backgroundDetails: {
+      type: 'string',
+    },
   },
-  "required": [
-    "cameraAngle",
-    "composition",
-    "visualEffects",
-    "characterDetails",
-    "background"
+  required: [
+    'cameraAngle',
+    'composition',
+    'visualEffects',
+    'characterDetails',
+    'background',
   ],
-  "additionalProperties": false
+  additionalProperties: false,
 };
 
 const DifyElementsEnum = [
-  "introduction",
-  "stimulation",
-  "problem", 
-  "change",
-  "solution",
-  "emotion",
-  "interval"
+  'introduction',
+  'stimulation',
+  'problem',
+  'change',
+  'solution',
+  'emotion',
+  'interval',
 ];
 
 const DifyEmotionsEnum = [
-  "joy",
-  "happy",
-  "sad",
-  "painful",
-  "despair",
-  "fun",
-  "anger",
-  "laughter",
-  "tokimeki",
-  "irritation",
-  "surprise",
-  "flat"
+  'joy',
+  'happy',
+  'sad',
+  'painful',
+  'despair',
+  'fun',
+  'anger',
+  'laughter',
+  'tokimeki',
+  'irritation',
+  'surprise',
+  'flat',
 ];
 
 const DifyPanelTypesEnum = [
-  "event",
-  "situation",
-  "reaction",
-  "turning",
-  "move"
+  'event',
+  'situation',
+  'reaction',
+  'turning',
+  'move',
 ];
 
-const DifyCameraAngleEnum = [
-  "near",
-  "middle",
-  "far"
-];
+const DifyCameraAngleEnum = ['near', 'middle', 'far'];
 
-const DifyVisualEffectsEnum = [
-  "normal",
-  "emotional",
-  "deformed",
-  "past"
-];
-
+const DifyVisualEffectsEnum = ['normal', 'emotional', 'deformed', 'past'];
 
 module.exports = {
   DifyFlow1Schema,
@@ -249,5 +209,5 @@ module.exports = {
   DifyEmotionsEnum,
   DifyPanelTypesEnum,
   DifyCameraAngleEnum,
-  DifyVisualEffectsEnum 
+  DifyVisualEffectsEnum,
 };

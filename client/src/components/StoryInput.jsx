@@ -6,16 +6,19 @@ const StoryInput = ({ onGenerate, loading, onClear }) => {
   const [useMockAI, setUseMockAI] = useState(false);
   const [pageCount, setPageCount] = useState(8);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
     if (text.trim() && !loading) {
       onGenerate(text.trim(), useMockAI, pageCount);
     }
   };
 
-  const handlePageCountChange = (e) => {
+  const handlePageCountChange = e => {
     const value = e.target.value;
-    if (value === '' || (/^\d+$/.test(value) && parseInt(value) > 0 && parseInt(value) <= 50)) {
+    if (
+      value === '' ||
+      (/^\d+$/.test(value) && parseInt(value) > 0 && parseInt(value) <= 50)
+    ) {
       setPageCount(value === '' ? '' : parseInt(value));
     }
   };
@@ -38,8 +41,8 @@ const StoryInput = ({ onGenerate, loading, onClear }) => {
     <div className="story-input">
       <div className="input-header">
         <h2>📝 物語を入力</h2>
-        <button 
-          type="button" 
+        <button
+          type="button"
           onClick={handleSampleLoad}
           className="sample-btn"
           disabled={loading}
@@ -47,22 +50,20 @@ const StoryInput = ({ onGenerate, loading, onClear }) => {
           サンプルを読み込み
         </button>
       </div>
-      
+
       <form onSubmit={handleSubmit}>
         <textarea
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={e => setText(e.target.value)}
           placeholder="ここに物語の文章を入力してください...&#10;&#10;例：&#10;太郎は朝早く起きて、窓の外を見た。雨が降っていた。&#10;「今日も雨か...」と彼はため息をついた。&#10;でも、玄関を出ると、隣の花子が傘を持って待っていた。"
           disabled={loading}
           rows={12}
           className="story-textarea"
         />
-        
+
         <div className="input-controls">
           <div className="input-info">
-            <span className="char-count">
-              {text.length} / 10000 文字
-            </span>
+            <span className="char-count">{text.length} / 10000 文字</span>
             <div className="page-count-input">
               <label htmlFor="pageCount">📄 ページ数:</label>
               <input
@@ -82,7 +83,7 @@ const StoryInput = ({ onGenerate, loading, onClear }) => {
                   <input
                     type="checkbox"
                     checked={useMockAI}
-                    onChange={(e) => setUseMockAI(e.target.checked)}
+                    onChange={e => setUseMockAI(e.target.checked)}
                     disabled={loading}
                   />
                   <span className="toggle-slider"></span>
@@ -93,7 +94,7 @@ const StoryInput = ({ onGenerate, loading, onClear }) => {
               </div>
             </div>
           </div>
-          
+
           <div className="input-buttons">
             <button
               type="button"
@@ -106,7 +107,7 @@ const StoryInput = ({ onGenerate, loading, onClear }) => {
             >
               クリア
             </button>
-            
+
             <button
               type="submit"
               disabled={!text.trim() || loading}

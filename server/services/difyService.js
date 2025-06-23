@@ -320,67 +320,116 @@ class DifyService {
     });
   }
 
-  getMockFlow1Output(userInput, totalPagesNum = 8) {
-    const sentences = userInput.split(/[。！？\n]/).filter(s => s.trim());
-    const pageCount = totalPagesNum;
+  getMockFlow1Output() {
     
     return {
-      scene: [{
-        pagesNum: pageCount,
-        contents: Array.from({ length: pageCount }, (_, i) => ({
-          page: i + 1,
-          elements: ["introduction", "stimulation", "problem", "solution"],
-          characterEmotions: ["happy", "surprise", "sad", "joy"],
-          text: sentences.slice(i * 4, (i + 1) * 4).join('。'),
-          concept: `ページ${i + 1}の概念`,
-          place: "場所設定"
-        })),
-        isExcitement: Math.random() > 0.5 ? 1 : 0
-      }]
+          "scene": [
+            {
+              "pagesNum": 2,
+              "isExcitement": 0,
+              "contents": [
+                {
+                  "page": 1,
+                  "elements": [
+                    "introduction"
+                  ],
+                  "characterEmotions": [
+                    "flat"
+                  ],
+                  "text": "太郎は朝早く起きて、窓の外を見た。",
+                  "concept": "太郎の一日の始まりを描写し、物語の導入を行う。",
+                  "place": "自宅、太郎の部屋"
+                },
+                {
+                  "page": 2,
+                  "elements": [
+                    "interval"
+                  ],
+                  "characterEmotions": [
+                    "flat"
+                  ],
+                  "text": "雨が降っていた。",
+                  "concept": "天候に関する状況説明を行い、静かな朝の雰囲気を強調する。",
+                  "place": "自宅、太郎の部屋"
+                }
+              ]
+            }
+          ]
     };
   }
 
-  getMockFlow2Output(pageData, previousInstructions = '') {
-    const baseInstructions = `${pageData.place}でのシーンを${pageData.characterEmotions.join('、')}の感情で表現する`;
-    const continuityNote = previousInstructions ? `前ページ指示: ${previousInstructions}` : '';
-    
+  getMockFlow2Output() {
+
     return {
-      panels: [
-        {
-          index: 1,
-          description: `${pageData.concept}の導入シーン`,
-          type: ["event", "situation"]
-        },
-        {
-          index: 2,
-          description: "キャラクターの反応",
-          type: ["reaction"]
-        },
-        {
-          index: 3,
-          description: "展開の転換点",
-          type: ["turning"]
-        },
-        {
-          index: 4,
-          description: "アクションシーン",
-          type: ["move", "event"]
-        }
-      ],
-      page: pageData.page,
-      instructions: continuityNote ? `${baseInstructions}（${continuityNote}）` : baseInstructions
+
+      
+        "page": 1,
+        "instructions": "",
+        "panels": [
+          {
+            "index": 1,
+            "description": "太郎がベッドから起き上がり、朝の光がカーテンから差し込む室内を描写。",
+            "type": [
+              "situation"
+            ],
+            "place": "自宅、太郎の部屋"
+          },
+          {
+            "index": 2,
+            "description": "太郎が窓辺に立ち、カーテンを開けて外を見ている姿。",
+            "type": [
+              "event"
+            ],
+            "place": "自宅、太郎の部屋"
+          },
+          {
+            "index": 3,
+            "description": "窓の外の景色。穏やかな朝の街並みが広がっている。",
+            "type": [
+              "situation"
+            ],
+            "place": "自宅、太郎の部屋"
+          }
+        ]
+      
     };
   }
 
-  getMockFlow3Output(panel) {
-    return {
-      cameraAngle: this.getRandomCameraAngle(),
-      composition: `コマ${panel.index}の構図: ${panel.description}`,
-      visualEffects: this.getRandomVisualEffect(),
-      characterDetails: "キャラクターの詳細な描写",
-      background: "背景の詳細",
-      backgroundDetails: "背景の詳細な説明"
-    };
+  getMockFlow3Output() {
+    return 
+      [
+      {
+        "index": 1,
+          "cameraAngle": "middle",
+          "composition": "キャラクターである太郎がベッドから体を起こしている姿を、やや引きの視点で部屋の中全体が見えるように配置。視線はカーテンから差し込む朝の光に向けられる。手前にベッドがあり奥にカーテンと窓が見える。太郎の表情はまだ眠そうだが、朝の光に少しだけほころぶ。",
+          "visualEffects": "normal",
+          "characterDetails": "太郎は寝間着姿で、髪の毛はやや乱れている。表情は少し眠そうだが、朝の陽射しに目を細める。",
+          "background": 1,
+          "backgroundDetails": "室内にはベッド、カーテン、窓、フローリングの床が描かれ、所々に衣類などの脱いだ服が見えている。朝の光が優しく部屋を照らしている様子が伝わる。"
+        },
+        {
+    "index": 2,
+              "cameraAngle": "middle",
+              "composition": "太郎の腰から上の半身が見える構図で、太郎がカーテンを開けて外を見ている動作がはっきりと描かれる。カーテンは揺れており、外の光が部屋に差し込んでいる。",
+              "visualEffects": "normal",
+              "characterDetails": "太郎はややリラックスした姿勢でカーテンを引いており、顔には外の景色に興味を持っているような穏やかな表情が浮かんでいる。",
+              "background": 0,
+              "backgroundDetails": ""
+            },
+            {
+              "index": 3,
+                "cameraAngle": "far",
+                "composition": "窓を正面からのアングルで捉え、広がる街並みを高い位置から俯瞰的に描く。手前には太郎の部屋の窓枠をぼんやりと見せ、遠景として建物や街路樹などが続く構図。",
+                "visualEffects": "normal",
+                "characterDetails": "このコマではキャラクターを描かない。",
+                "background": 1,
+                "backgroundDetails": "背景に穏やかな朝の空が広がり、街灯に照らされた歩道、並んだ家々、遠くに見える山並みなど、平和で静かな都会の朝を描写。"
+              
+            }
+          
+        
+      ]
+    
   }
 
   getRandomCameraAngle() {

@@ -7,7 +7,7 @@ class CSVReader {
     this.contextData = {
       mangaContext: [],
       characterPatterns: [],
-      layoutTemplates: []
+      layoutTemplates: [],
     };
     this.loadAllData();
   }
@@ -17,7 +17,7 @@ class CSVReader {
       await Promise.all([
         this.loadMangaContext(),
         this.loadCharacterPatterns(),
-        this.loadLayoutTemplates()
+        this.loadLayoutTemplates(),
       ]);
       console.log('✅ All CSV data loaded successfully');
     } catch (error) {
@@ -29,10 +29,10 @@ class CSVReader {
     return new Promise((resolve, reject) => {
       const results = [];
       const filePath = path.join(__dirname, '../data/manga_context.csv');
-      
+
       fs.createReadStream(filePath)
         .pipe(csv())
-        .on('data', (data) => results.push(data))
+        .on('data', data => results.push(data))
         .on('end', () => {
           this.contextData.mangaContext = results;
           console.log(`📚 Loaded ${results.length} manga context rules`);
@@ -46,10 +46,10 @@ class CSVReader {
     return new Promise((resolve, reject) => {
       const results = [];
       const filePath = path.join(__dirname, '../data/character_patterns.csv');
-      
+
       fs.createReadStream(filePath)
         .pipe(csv())
-        .on('data', (data) => results.push(data))
+        .on('data', data => results.push(data))
         .on('end', () => {
           this.contextData.characterPatterns = results;
           console.log(`👤 Loaded ${results.length} character patterns`);
@@ -63,10 +63,10 @@ class CSVReader {
     return new Promise((resolve, reject) => {
       const results = [];
       const filePath = path.join(__dirname, '../data/layout_templates.csv');
-      
+
       fs.createReadStream(filePath)
         .pipe(csv())
-        .on('data', (data) => results.push(data))
+        .on('data', data => results.push(data))
         .on('end', () => {
           this.contextData.layoutTemplates = results;
           console.log(`📐 Loaded ${results.length} layout templates`);
@@ -89,17 +89,21 @@ class CSVReader {
   }
 
   getContextByType(ruleType) {
-    return this.contextData.mangaContext.filter(rule => rule.rule_type === ruleType);
+    return this.contextData.mangaContext.filter(
+      rule => rule.rule_type === ruleType
+    );
   }
 
   getContextByCondition(condition) {
-    return this.contextData.mangaContext.filter(rule => 
+    return this.contextData.mangaContext.filter(rule =>
       rule.condition.toLowerCase().includes(condition.toLowerCase())
     );
   }
 
   getHighPriorityRules() {
-    return this.contextData.mangaContext.filter(rule => rule.priority === 'high');
+    return this.contextData.mangaContext.filter(
+      rule => rule.priority === 'high'
+    );
   }
 
   reloadData() {

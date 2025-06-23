@@ -34,7 +34,6 @@ class ImageGenerationService {
 
       // Canvasをバッファに変換
       return canvas.toBuffer('image/png');
-
     } catch (error) {
       console.error('Error generating page image:', error);
       throw new Error('ページ画像の生成に失敗しました: ' + error.message);
@@ -46,7 +45,7 @@ class ImageGenerationService {
    */
   async drawPageHeader(ctx, scene, pageNumber) {
     const headerHeight = 80;
-    
+
     // ヘッダー背景
     ctx.fillStyle = '#f5f5f5';
     ctx.fillRect(0, 0, this.pageWidth, headerHeight);
@@ -68,7 +67,11 @@ class ImageGenerationService {
     ctx.fillText(`感情: ${scene.emotion_tone}`, this.pageWidth - 20, 30);
 
     // レイアウトテンプレート
-    ctx.fillText(`レイアウト: ${scene.layout_template}`, this.pageWidth - 20, 50);
+    ctx.fillText(
+      `レイアウト: ${scene.layout_template}`,
+      this.pageWidth - 20,
+      50
+    );
 
     return headerHeight;
   }
@@ -79,17 +82,21 @@ class ImageGenerationService {
   async drawPanels(ctx, panels, layoutTemplate) {
     const startY = 90; // ヘッダー後の開始位置
     const availableHeight = this.pageHeight - 170; // ヘッダーとフッターを除いた高さ
-    const panelPositions = this.calculatePanelPositions(panels, layoutTemplate, availableHeight);
+    const panelPositions = this.calculatePanelPositions(
+      panels,
+      layoutTemplate,
+      availableHeight
+    );
 
     for (let i = 0; i < panels.length; i++) {
       const panel = panels[i];
       const position = panelPositions[i];
-      
+
       await this.drawSinglePanel(ctx, panel, {
         x: position.x,
         y: startY + position.y,
         width: position.width,
-        height: position.height
+        height: position.height,
       });
     }
   }
@@ -99,7 +106,7 @@ class ImageGenerationService {
    */
   calculatePanelPositions(panels, layoutTemplate, availableHeight) {
     const positions = [];
-    const totalWidth = this.pageWidth - (this.panelMargin * 2);
+    const totalWidth = this.pageWidth - this.panelMargin * 2;
 
     // シンプルなグリッドレイアウト実装
     const panelCount = panels.length;
@@ -125,8 +132,9 @@ class ImageGenerationService {
         rows = Math.ceil(panelCount / cols);
     }
 
-    const panelWidth = (totalWidth - (this.panelMargin * (cols - 1))) / cols;
-    const panelHeight = (availableHeight - (this.panelMargin * (rows - 1))) / rows;
+    const panelWidth = (totalWidth - this.panelMargin * (cols - 1)) / cols;
+    const panelHeight =
+      (availableHeight - this.panelMargin * (rows - 1)) / rows;
 
     for (let i = 0; i < panelCount; i++) {
       const row = Math.floor(i / cols);
@@ -136,7 +144,7 @@ class ImageGenerationService {
         x: this.panelMargin + col * (panelWidth + this.panelMargin),
         y: row * (panelHeight + this.panelMargin),
         width: panelWidth,
-        height: panelHeight
+        height: panelHeight,
       });
     }
 
@@ -149,7 +157,7 @@ class ImageGenerationService {
   async drawSinglePanel(ctx, panel, bounds) {
     // Flow3構図データの取得
     const compositionData = panel.composition_data;
-    
+
     // 視覚効果に基づいてパネル背景色を調整
     let panelBg = '#ffffff';
     if (compositionData?.visualEffects === 'emotional') {
@@ -164,36 +172,57 @@ class ImageGenerationService {
     ctx.strokeStyle = this.panelBorderColor;
     ctx.lineWidth = this.panelBorderWidth;
     ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    
+
     // パネル内部を効果に応じた色で塗りつぶし
     ctx.fillStyle = panelBg;
-    ctx.fillRect(bounds.x + this.panelBorderWidth/2, bounds.y + this.panelBorderWidth/2, 
-                bounds.width - this.panelBorderWidth, bounds.height - this.panelBorderWidth);
+    ctx.fillRect(
+      bounds.x + this.panelBorderWidth / 2,
+      bounds.y + this.panelBorderWidth / 2,
+      bounds.width - this.panelBorderWidth,
+      bounds.height - this.panelBorderWidth
+    );
 
     // パネル内容を描画
     const contentArea = {
       x: bounds.x + 10,
       y: bounds.y + 10,
       width: bounds.width - 20,
-      height: bounds.height - 20
+      height: bounds.height - 20,
     };
 
     // パネル番号（右上に小さく表示）
     ctx.fillStyle = '#666666';
     ctx.font = '10px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText(`${panel.panel_number}`, contentArea.x + contentArea.width - 5, contentArea.y + 15);
+    ctx.fillText(
+      `${panel.panel_number}`,
+      contentArea.x + contentArea.width - 5,
+      contentArea.y + 15
+    );
 
     // 背景を先に描画（Flow3データを活用）
-    if (compositionData?.background === 1 && compositionData?.backgroundDetails) {
-      await this.drawBackgroundWithComposition(ctx, compositionData.backgroundDetails, contentArea, compositionData);
+    if (
+      compositionData?.background === 1 &&
+      compositionData?.backgroundDetails
+    ) {
+      await this.drawBackgroundWithComposition(
+        ctx,
+        compositionData.backgroundDetails,
+        contentArea,
+        compositionData
+      );
     } else if (panel.content.background) {
       await this.drawBackground(ctx, panel.content.background, contentArea);
     }
 
     // キャラクターを描画（カメラアングルを考慮）
     if (panel.content.characters && panel.content.characters.length > 0) {
-      await this.drawCharactersWithComposition(ctx, panel.content.characters, contentArea, compositionData);
+      await this.drawCharactersWithComposition(
+        ctx,
+        panel.content.characters,
+        contentArea,
+        compositionData
+      );
     }
 
     // セリフを描画
@@ -211,21 +240,29 @@ class ImageGenerationService {
       ctx.fillStyle = '#999999';
       ctx.font = '8px Arial';
       ctx.textAlign = 'left';
-      ctx.fillText(`角度:${compositionData.cameraAngle} 効果:${compositionData.visualEffects}`, 
-                   contentArea.x + 2, contentArea.y + contentArea.height - 5);
+      ctx.fillText(
+        `角度:${compositionData.cameraAngle} 効果:${compositionData.visualEffects}`,
+        contentArea.x + 2,
+        contentArea.y + contentArea.height - 5
+      );
     }
   }
 
   /**
    * Flow3構図データを活用してキャラクターを描画
    */
-  async drawCharactersWithComposition(ctx, characters, contentArea, compositionData) {
+  async drawCharactersWithComposition(
+    ctx,
+    characters,
+    contentArea,
+    compositionData
+  ) {
     if (!characters || characters.length === 0) return;
-    
+
     // カメラアングルに基づいてキャラクターサイズとポジションを調整
     let charScale = 1.0;
     let charY = contentArea.y + 60;
-    
+
     if (compositionData?.cameraAngle === 'near') {
       charScale = 1.5; // クローズアップ
       charY = contentArea.y + 40;
@@ -233,14 +270,21 @@ class ImageGenerationService {
       charScale = 0.7; // 引きの構図
       charY = contentArea.y + 80;
     }
-    
+
     const charSpacing = contentArea.width / (characters.length + 1);
-    
+
     characters.forEach((character, index) => {
       const charX = contentArea.x + charSpacing * (index + 1);
-      
+
       // キャラクターの描画（スケール適用）
-      this.drawSingleCharacter(ctx, character, charX, charY, charScale, compositionData);
+      this.drawSingleCharacter(
+        ctx,
+        character,
+        charX,
+        charY,
+        charScale,
+        compositionData
+      );
     });
   }
 
@@ -252,7 +296,7 @@ class ImageGenerationService {
       head: 15 * scale,
       body: 60 * scale,
       arm: 20 * scale,
-      leg: 25 * scale
+      leg: 25 * scale,
     };
 
     // 視覚効果に基づいて線の太さを調整
@@ -265,24 +309,24 @@ class ImageGenerationService {
 
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = lineWidth;
-    
+
     // 頭（円）
     ctx.beginPath();
     ctx.arc(x, y, size.head, 0, 2 * Math.PI);
     ctx.stroke();
-    
+
     // 体（縦線）
     ctx.beginPath();
     ctx.moveTo(x, y + size.head);
     ctx.lineTo(x, y + size.body);
     ctx.stroke();
-    
+
     // 腕（横線）
     ctx.beginPath();
     ctx.moveTo(x - size.arm, y + size.body * 0.6);
     ctx.lineTo(x + size.arm, y + size.body * 0.6);
     ctx.stroke();
-    
+
     // 足（ハの字）
     ctx.beginPath();
     ctx.moveTo(x, y + size.body);
@@ -290,7 +334,7 @@ class ImageGenerationService {
     ctx.moveTo(x, y + size.body);
     ctx.lineTo(x + size.leg * 0.6, y + size.body + size.leg);
     ctx.stroke();
-    
+
     // 感情表現（顔の中）
     this.drawCharacterEmotion(ctx, character, x, y, scale);
   }
@@ -301,11 +345,11 @@ class ImageGenerationService {
   drawCharacterEmotion(ctx, character, x, y, scale) {
     ctx.fillStyle = this.getEmotionColor(character.emotion);
     ctx.beginPath();
-    
+
     const eyeSize = 2 * scale;
     const eyeOffset = 5 * scale;
     const mouthRadius = 8 * scale;
-    
+
     if (character.emotion === 'happy') {
       // 笑顔
       ctx.arc(x - eyeOffset, y - eyeOffset, eyeSize, 0, 2 * Math.PI); // 左目
@@ -337,7 +381,12 @@ class ImageGenerationService {
   /**
    * Flow3構図データを活用した背景描画
    */
-  async drawBackgroundWithComposition(ctx, backgroundDetails, contentArea, compositionData) {
+  async drawBackgroundWithComposition(
+    ctx,
+    backgroundDetails,
+    contentArea,
+    compositionData
+  ) {
     // 背景の基本色を設定
     let bgColor = '#f0f0f0';
     if (compositionData.visualEffects === 'emotional') {
@@ -350,17 +399,26 @@ class ImageGenerationService {
 
     // 背景を塗りつぶし
     ctx.fillStyle = bgColor;
-    ctx.fillRect(contentArea.x, contentArea.y + contentArea.height * 0.7, 
-                 contentArea.width, contentArea.height * 0.3);
+    ctx.fillRect(
+      contentArea.x,
+      contentArea.y + contentArea.height * 0.7,
+      contentArea.width,
+      contentArea.height * 0.3
+    );
 
     // 背景詳細テキストを描画
     ctx.fillStyle = '#666666';
     ctx.font = '10px Arial';
     ctx.textAlign = 'center';
-    const bgText = backgroundDetails.length > 30 ? 
-      backgroundDetails.substring(0, 27) + '...' : backgroundDetails;
-    ctx.fillText(bgText, contentArea.x + contentArea.width / 2, 
-                 contentArea.y + contentArea.height - 15);
+    const bgText =
+      backgroundDetails.length > 30
+        ? backgroundDetails.substring(0, 27) + '...'
+        : backgroundDetails;
+    ctx.fillText(
+      bgText,
+      contentArea.x + contentArea.width / 2,
+      contentArea.y + contentArea.height - 15
+    );
 
     // カメラアングルに応じた背景要素を追加
     if (compositionData.cameraAngle === 'far') {
@@ -369,7 +427,10 @@ class ImageGenerationService {
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(contentArea.x, contentArea.y + contentArea.height * 0.8);
-      ctx.lineTo(contentArea.x + contentArea.width, contentArea.y + contentArea.height * 0.8);
+      ctx.lineTo(
+        contentArea.x + contentArea.width,
+        contentArea.y + contentArea.height * 0.8
+      );
       ctx.stroke();
     }
   }
@@ -379,34 +440,34 @@ class ImageGenerationService {
    */
   async drawCharacters(ctx, characters, contentArea) {
     if (!characters || characters.length === 0) return;
-    
+
     const charY = contentArea.y + 60;
     const charSpacing = contentArea.width / (characters.length + 1);
-    
+
     characters.forEach((character, index) => {
       const charX = contentArea.x + charSpacing * (index + 1);
-      
+
       // キャラクターの体（棒人間風）
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = 3;
-      
+
       // 頭（円）
       ctx.beginPath();
       ctx.arc(charX, charY, 15, 0, 2 * Math.PI);
       ctx.stroke();
-      
+
       // 体（縦線）
       ctx.beginPath();
       ctx.moveTo(charX, charY + 15);
       ctx.lineTo(charX, charY + 60);
       ctx.stroke();
-      
+
       // 腕（横線）
       ctx.beginPath();
       ctx.moveTo(charX - 20, charY + 35);
       ctx.lineTo(charX + 20, charY + 35);
       ctx.stroke();
-      
+
       // 足（ハの字）
       ctx.beginPath();
       ctx.moveTo(charX, charY + 60);
@@ -414,7 +475,7 @@ class ImageGenerationService {
       ctx.moveTo(charX, charY + 60);
       ctx.lineTo(charX + 15, charY + 85);
       ctx.stroke();
-      
+
       // 感情表現（顔の中）
       ctx.fillStyle = this.getEmotionColor(character.emotion);
       ctx.beginPath();
@@ -441,7 +502,7 @@ class ImageGenerationService {
         ctx.fill();
         ctx.fillRect(charX - 3, charY + 3, 6, 2); // 口
       }
-      
+
       // キャラクター名（小さく表示）
       ctx.fillStyle = '#000000';
       ctx.font = '10px Arial';
@@ -455,54 +516,75 @@ class ImageGenerationService {
    */
   async drawDialogue(ctx, dialogue, contentArea) {
     if (!dialogue || dialogue.length === 0) return;
-    
+
     const text = dialogue.join(' ');
     const dialogueY = contentArea.y + contentArea.height - 80;
     const bubbleWidth = Math.min(contentArea.width - 20, 200);
     const bubbleHeight = 50;
     const bubbleX = contentArea.x + (contentArea.width - bubbleWidth) / 2;
-    
+
     // 吹き出しの背景（白い楕円）
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.ellipse(bubbleX + bubbleWidth/2, dialogueY + bubbleHeight/2, 
-                bubbleWidth/2, bubbleHeight/2, 0, 0, 2 * Math.PI);
+    ctx.ellipse(
+      bubbleX + bubbleWidth / 2,
+      dialogueY + bubbleHeight / 2,
+      bubbleWidth / 2,
+      bubbleHeight / 2,
+      0,
+      0,
+      2 * Math.PI
+    );
     ctx.fill();
-    
+
     // 吹き出しの枠線（黒い楕円）
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.ellipse(bubbleX + bubbleWidth/2, dialogueY + bubbleHeight/2, 
-                bubbleWidth/2, bubbleHeight/2, 0, 0, 2 * Math.PI);
+    ctx.ellipse(
+      bubbleX + bubbleWidth / 2,
+      dialogueY + bubbleHeight / 2,
+      bubbleWidth / 2,
+      bubbleHeight / 2,
+      0,
+      0,
+      2 * Math.PI
+    );
     ctx.stroke();
-    
+
     // 吹き出しのしっぽ
     ctx.fillStyle = '#ffffff';
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(bubbleX + bubbleWidth/2 - 10, dialogueY + bubbleHeight - 5);
-    ctx.lineTo(bubbleX + bubbleWidth/2, dialogueY + bubbleHeight + 15);
-    ctx.lineTo(bubbleX + bubbleWidth/2 + 10, dialogueY + bubbleHeight - 5);
+    ctx.moveTo(bubbleX + bubbleWidth / 2 - 10, dialogueY + bubbleHeight - 5);
+    ctx.lineTo(bubbleX + bubbleWidth / 2, dialogueY + bubbleHeight + 15);
+    ctx.lineTo(bubbleX + bubbleWidth / 2 + 10, dialogueY + bubbleHeight - 5);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
-    
+
     // セリフテキスト
     ctx.fillStyle = '#000000';
     ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
-    
+
     const wrappedText = this.wrapText(ctx, text, bubbleWidth - 20);
     const lineHeight = 15;
-    const startY = dialogueY + bubbleHeight/2 - (wrappedText.length * lineHeight)/2 + lineHeight/2;
-    
+    const startY =
+      dialogueY +
+      bubbleHeight / 2 -
+      (wrappedText.length * lineHeight) / 2 +
+      lineHeight / 2;
+
     wrappedText.forEach((line, index) => {
-      ctx.fillText(line, bubbleX + bubbleWidth/2, startY + (index * lineHeight));
+      ctx.fillText(
+        line,
+        bubbleX + bubbleWidth / 2,
+        startY + index * lineHeight
+      );
     });
   }
-
 
   /**
    * 背景を描画
@@ -511,7 +593,11 @@ class ImageGenerationService {
     ctx.fillStyle = '#e8e8e8';
     ctx.font = '10px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText(`背景: ${background}`, contentArea.x + contentArea.width, contentArea.y + 25);
+    ctx.fillText(
+      `背景: ${background}`,
+      contentArea.x + contentArea.width,
+      contentArea.y + 25
+    );
   }
 
   /**
@@ -519,14 +605,14 @@ class ImageGenerationService {
    */
   async drawVisualNotes(ctx, notes, contentArea) {
     if (!notes) return;
-    
+
     ctx.fillStyle = '#FF6B35';
     ctx.font = 'bold 14px Arial';
     ctx.textAlign = 'center';
-    
+
     // 擬音語風のテキストを斜めに配置
     ctx.save();
-    ctx.translate(contentArea.x + contentArea.width/2, contentArea.y + 30);
+    ctx.translate(contentArea.x + contentArea.width / 2, contentArea.y + 30);
     ctx.rotate(-0.2); // 軽く斜めに
     ctx.fillText(notes, 0, 0);
     ctx.restore();
@@ -538,20 +624,20 @@ class ImageGenerationService {
   async drawPageFooter(ctx, scene) {
     const footerY = this.pageHeight - 60;
     const footerHeight = 60;
-    
+
     // フッター背景
     ctx.fillStyle = '#f9f9f9';
     ctx.fillRect(0, footerY, this.pageWidth, footerHeight);
-    
+
     // 適用されたルール
     if (scene.applied_rules && scene.applied_rules.length > 0) {
       ctx.fillStyle = '#666666';
       ctx.font = '10px Arial';
       ctx.textAlign = 'left';
       ctx.fillText('適用ルール:', 20, footerY + 20);
-      
+
       scene.applied_rules.slice(0, 2).forEach((rule, index) => {
-        ctx.fillText(`• ${rule.description}`, 20, footerY + 35 + (index * 12));
+        ctx.fillText(`• ${rule.description}`, 20, footerY + 35 + index * 12);
       });
     }
   }
@@ -561,14 +647,14 @@ class ImageGenerationService {
    */
   getEmotionColor(emotion) {
     const emotionColors = {
-      'happy': '#FFD700',
-      'sad': '#4169E1',
-      'angry': '#FF4500',
-      'surprised': '#FF69B4',
-      'neutral': '#808080',
-      'excited': '#FF6347'
+      happy: '#FFD700',
+      sad: '#4169E1',
+      angry: '#FF4500',
+      surprised: '#FF69B4',
+      neutral: '#808080',
+      excited: '#FF6347',
     };
-    
+
     return emotionColors[emotion] || emotionColors.neutral;
   }
 
@@ -583,7 +669,7 @@ class ImageGenerationService {
     for (let i = 1; i < words.length; i++) {
       const word = words[i];
       const width = ctx.measureText(currentLine + ' ' + word).width;
-      
+
       if (width < maxWidth) {
         currentLine += ' ' + word;
       } else {
@@ -591,7 +677,7 @@ class ImageGenerationService {
         currentLine = word;
       }
     }
-    
+
     lines.push(currentLine);
     return lines;
   }
@@ -601,11 +687,11 @@ class ImageGenerationService {
    */
   async generateAllPageImages(storyboard) {
     const images = [];
-    
+
     for (let i = 0; i < storyboard.scenes.length; i++) {
       const scene = storyboard.scenes[i];
       const pageImage = await this.generatePageImage(scene, i + 1);
-      
+
       images.push({
         pageNumber: i + 1,
         imageBuffer: pageImage,
@@ -613,11 +699,11 @@ class ImageGenerationService {
           description: scene.description,
           emotion_tone: scene.emotion_tone,
           layout_template: scene.layout_template,
-          panels_count: scene.panels.length
-        }
+          panels_count: scene.panels.length,
+        },
       });
     }
-    
+
     return images;
   }
 }

@@ -1,6 +1,11 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-export const generateStoryboard = async (text, useMockAI = false, pageCount = 8) => {
+export const generateStoryboard = async (
+  text,
+  useMockAI = false,
+  pageCount = 8
+) => {
   const response = await fetch(`${API_BASE_URL}/generate-storyboard`, {
     method: 'POST',
     headers: {
@@ -18,7 +23,9 @@ export const generateStoryboard = async (text, useMockAI = false, pageCount = 8)
 };
 
 export const getContextData = async (type = null) => {
-  const url = type ? `${API_BASE_URL}/context?type=${type}` : `${API_BASE_URL}/context`;
+  const url = type
+    ? `${API_BASE_URL}/context?type=${type}`
+    : `${API_BASE_URL}/context`;
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -28,8 +35,10 @@ export const getContextData = async (type = null) => {
   return await response.json();
 };
 
-export const searchContext = async (condition) => {
-  const response = await fetch(`${API_BASE_URL}/context/search?condition=${encodeURIComponent(condition)}`);
+export const searchContext = async condition => {
+  const response = await fetch(
+    `${API_BASE_URL}/context/search?condition=${encodeURIComponent(condition)}`
+  );
 
   if (!response.ok) {
     throw new Error('Failed to search context');
@@ -38,7 +47,7 @@ export const searchContext = async (condition) => {
   return await response.json();
 };
 
-export const generatePageImages = async (storyboard) => {
+export const generatePageImages = async storyboard => {
   const response = await fetch(`${API_BASE_URL}/generate-page-images`, {
     method: 'POST',
     headers: {

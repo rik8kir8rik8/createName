@@ -10,9 +10,9 @@ class EnvironmentConfig {
   loadEnvironmentFiles() {
     // Load environment files in order of priority (later files override earlier ones)
     const envFiles = [
-      '.env',                 // Default settings (loaded first)
-      '.env.development',     // Environment specific
-      '.env.local'            // Highest priority (local secrets, loaded last to override)
+      '.env', // Default settings (loaded first)
+      '.env.development', // Environment specific
+      '.env.local', // Highest priority (local secrets, loaded last to override)
     ];
 
     envFiles.forEach(file => {
@@ -26,36 +26,36 @@ class EnvironmentConfig {
 
   validateRequiredVariables() {
     const requiredVars = {
-      'OPENAI_API_KEY': 'OpenAI API key for AI processing',
-      'PORT': 'Server port number'
+      OPENAI_API_KEY: 'OpenAI API key for AI processing',
+      PORT: 'Server port number',
     };
 
     const conditionalVars = {
       // Dify variables are required only when not using mock
-      'DIFY_FLOW1_API_KEY': {
+      DIFY_FLOW1_API_KEY: {
         condition: () => process.env.USE_MOCK_DIFY !== 'true',
-        description: 'Dify Flow1 API key for scene division workflow'
+        description: 'Dify Flow1 API key for scene division workflow',
       },
-      'DIFY_FLOW1_WORKFLOW_ID': {
+      DIFY_FLOW1_WORKFLOW_ID: {
         condition: () => process.env.USE_MOCK_DIFY !== 'true',
-        description: 'Dify Flow1 (scene division) workflow ID'
+        description: 'Dify Flow1 (scene division) workflow ID',
       },
-      'DIFY_FLOW2_API_KEY': {
+      DIFY_FLOW2_API_KEY: {
         condition: () => process.env.USE_MOCK_DIFY !== 'true',
-        description: 'Dify Flow2 API key for panel layout workflow'
+        description: 'Dify Flow2 API key for panel layout workflow',
       },
-      'DIFY_FLOW2_WORKFLOW_ID': {
+      DIFY_FLOW2_WORKFLOW_ID: {
         condition: () => process.env.USE_MOCK_DIFY !== 'true',
-        description: 'Dify Flow2 (panel layout) workflow ID'
+        description: 'Dify Flow2 (panel layout) workflow ID',
       },
-      'DIFY_FLOW3_API_KEY': {
+      DIFY_FLOW3_API_KEY: {
         condition: () => process.env.USE_MOCK_DIFY !== 'true',
-        description: 'Dify Flow3 API key for composition workflow'
+        description: 'Dify Flow3 API key for composition workflow',
       },
-      'DIFY_FLOW3_WORKFLOW_ID': {
+      DIFY_FLOW3_WORKFLOW_ID: {
         condition: () => process.env.USE_MOCK_DIFY !== 'true',
-        description: 'Dify Flow3 (composition) workflow ID'
-      }
+        description: 'Dify Flow3 (composition) workflow ID',
+      },
     };
 
     const missing = [];
@@ -84,8 +84,10 @@ class EnvironmentConfig {
       console.error('\n❌ Missing required environment variables:');
       missing.forEach(item => console.error(`  - ${item}`));
       console.error('\n💡 Please check the setup guide in README.md');
-      console.error('💡 Copy .env.local.example to .env.local and configure your API keys\n');
-      
+      console.error(
+        '💡 Copy .env.local.example to .env.local and configure your API keys\n'
+      );
+
       if (process.env.NODE_ENV === 'production') {
         process.exit(1);
       }
@@ -109,13 +111,21 @@ class EnvironmentConfig {
     const hasDifyFlow3 = !!process.env.DIFY_FLOW3_API_KEY;
 
     console.log('🔧 Current configuration:');
-    console.log(`  - OpenAI API: ${hasOpenAI ? '✅ Configured' : '❌ Missing'}`);
+    console.log(
+      `  - OpenAI API: ${hasOpenAI ? '✅ Configured' : '❌ Missing'}`
+    );
     if (usingMock) {
       console.log(`  - Dify API: 💡 Mock mode`);
     } else {
-      console.log(`  - Dify Flow1: ${hasDifyFlow1 ? '✅ Configured' : '❌ Missing'}`);
-      console.log(`  - Dify Flow2: ${hasDifyFlow2 ? '✅ Configured' : '❌ Missing'}`);
-      console.log(`  - Dify Flow3: ${hasDifyFlow3 ? '✅ Configured' : '❌ Missing'}`);
+      console.log(
+        `  - Dify Flow1: ${hasDifyFlow1 ? '✅ Configured' : '❌ Missing'}`
+      );
+      console.log(
+        `  - Dify Flow2: ${hasDifyFlow2 ? '✅ Configured' : '❌ Missing'}`
+      );
+      console.log(
+        `  - Dify Flow3: ${hasDifyFlow3 ? '✅ Configured' : '❌ Missing'}`
+      );
     }
     console.log(`  - Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log('');
@@ -139,7 +149,7 @@ class EnvironmentConfig {
         flow3ApiKey: null,
         flow1Id: null,
         flow2Id: null,
-        flow3Id: null
+        flow3Id: null,
       };
     }
 
@@ -150,8 +160,17 @@ class EnvironmentConfig {
     const flow2Id = process.env.DIFY_FLOW2_WORKFLOW_ID;
     const flow3Id = process.env.DIFY_FLOW3_WORKFLOW_ID;
 
-    if (!flow1ApiKey || !flow2ApiKey || !flow3ApiKey || !flow1Id || !flow2Id || !flow3Id) {
-      throw new Error('Dify configuration is incomplete. Please check your API keys and workflow IDs.');
+    if (
+      !flow1ApiKey ||
+      !flow2ApiKey ||
+      !flow3ApiKey ||
+      !flow1Id ||
+      !flow2Id ||
+      !flow3Id
+    ) {
+      throw new Error(
+        'Dify configuration is incomplete. Please check your API keys and workflow IDs.'
+      );
     }
 
     return {
@@ -162,7 +181,7 @@ class EnvironmentConfig {
       flow3ApiKey,
       flow1Id,
       flow2Id,
-      flow3Id
+      flow3Id,
     };
   }
 
