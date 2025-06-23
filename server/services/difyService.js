@@ -175,6 +175,7 @@ class DifyService {
       console.log(`✅ Flow 3 completed for panel ${panel.index}`);
       return parsedData;
     } catch (error) {
+      console.log(panel)
       console.error(`❌ Flow 3 error for panel ${panel.index}:`, error);
       throw new Error(`コマ構図決定処理に失敗しました (コマ${panel.index}): ${error.message}`);
     }

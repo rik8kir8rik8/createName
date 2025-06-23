@@ -76,10 +76,15 @@ class DifyIntegrationService {
         let flow3Result;
 
         if (this.difyService.useMock || useMockDify) {
+          flow3Result = this.difyService.getMockFlow3Output();
+
+        } else {
           for (const panel of currentPageData.flow2Result.panels) {
             console.log(`💡 Using mock Dify Flow 3 for panel ${panel.index}`);
-            flow3Result = this.difyService.getMockFlow3Output(panel);
-
+            flow3Result = await this.difyService.processFlow3(              currentPageData.flow2Result.panels,
+              panel,
+              previousPagePanelLast,nextPagePanelFirst)
+            
             processedPanels.push({
               ...panel,
               composition: flow3Result,
@@ -87,8 +92,7 @@ class DifyIntegrationService {
 
             await this.delay(50);
           }
-        } else {
-          flow3Result = await this.difyService.processFlow3();
+          ;
         }
 
         // Update the flow2Result with processed panels
