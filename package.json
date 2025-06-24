@@ -9,7 +9,10 @@
     "client:dev": "cd client && npm run dev",
     "build": "cd client && npm run build",
     "start": "node server/index.js",
-    "install:all": "npm install && cd client && npm install"
+    "install:all": "npm install && cd client && npm install",
+    "test:vrm": "node test_vrm_system.js",
+    "test:advanced": "node test_advanced_character_system.js",
+    "test:model3d": "node test_model3d_system.js"
   },
   "dependencies": {
     "canvas": "^2.11.2",
@@ -19,7 +22,10 @@
     "express": "^4.18.2",
     "node-fetch": "^2.7.0",
     "openai": "^4.20.1",
-    "sharp": "^0.32.6"
+    "sharp": "^0.32.6",
+    "three": "^0.177.0",
+    "@pixiv/three-vrm": "^2.0.7",
+    "multer": "^1.4.5"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

@@ -9,7 +9,12 @@
       "Bash(npm run server:dev:*)",
       "Bash(npm start)",
       "Bash(pkill:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(node:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:pixiv.github.io)"
     ],
     "deny": []
   }

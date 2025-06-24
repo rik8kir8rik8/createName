@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VRM Character Controls</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* 3Dビューポート */
+        .viewport {
+            flex: 1;
+            position: relative;
+            background: #000;
+            border-right: 2px solid #444;
+        }
+        
+        #vrm-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: grab;
+        }
+        
+        #vrm-canvas:active {
+            cursor: grabbing;
+        }
+        
+        /* 情報オーバーレイ */
+        .viewport-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 100;
+        }
+        
+        /* コントロールパネル */
+        .controls {
+            width: 350px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .control-section {
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-section h3 {
+            margin-bottom: 15px;
+            color: #64b5f6;
+            font-size: 16px;
+            border-bottom: 1px solid rgba(100, 181, 246, 0.3);
+            padding-bottom: 5px;
+        }
+        
+        /* ファイルアップロード */
+        .file-upload {
+            border: 2px dashed #64b5f6;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            border-color: #90caf9;
+            background: rgba(100, 181, 246, 0.1);
+        }
+        
+        .file-upload.dragover {
+            border-color: #42a5f5;
+            background: rgba(66, 165, 245, 0.2);
+        }
+        
+        #vrm-file-input {
+            display: none;
+        }
+        
+        .upload-text {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #b3d9ff;
+        }
+        
+        /* ボタンスタイル */
+        .btn {
+            background: linear-gradient(45deg, #64b5f6, #42a5f5);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin: 5px;
+            width: calc(100% - 10px);
+        }
+        
+        .btn:hover {
+            background: linear-gradient(45deg, #42a5f5, #2196f3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 12px;
+            width: auto;
+            margin: 2px;
+        }
+        
+        /* ポーズボタングリッド */
+        .pose-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .pose-btn {
+            padding: 12px 8px;
+            font-size: 11px;
+            text-align: center;
+        }
+        
+        /* 表情ボタングリッド */
+        .expression-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-top: 10px;
+        }
+        
+        .expression-btn {
+            padding: 10px 5px;
+            font-size: 10px;
+            text-align: center;
+        }
+        
+        /* スライダー */
+        .slider-group {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #b3d9ff;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #64b5f6;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #64b5f6;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* ステータス */
+        .status {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .status.loading {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid #ffc107;
+        }
+        
+        .status.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+        }
+        
+        .status.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4caf50;
+        }
+        
+        /* VRMファイル情報 */
+        .vrm-info {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .vrm-info h4 {
+            color: #81c784;
+            margin-bottom: 5px;
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .viewport {
+                height: 60vh;
+                border-right: none;
+                border-bottom: 2px solid #444;
+            }
+            
+            .controls {
+                width: 100%;
+                height: 40vh;
+                padding: 15px;
+            }
+            
+            .pose-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .expression-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 3Dビューポート -->
+        <div class="viewport">
+            <canvas id="vrm-canvas"></canvas>
+            
+            <!-- 情報オーバーレイ -->
+            <div class="viewport-info">
+                <div id="fps-counter">FPS: --</div>
+                <div id="model-info">VRMモデル: 未読み込み</div>
+                <div id="camera-info">カメラ: (0, 0, 5)</div>
+            </div>
+        </div>
+        
+        <!-- コントロールパネル -->
+        <div class="controls">
+            <!-- VRMファイル読み込み -->
+            <div class="control-section">
+                <h3>🤖 VRMモデル読み込み</h3>
+                
+                <div class="file-upload" onclick="document.getElementById('vrm-file-input').click()">
+                    <div style="font-size: 24px;">📁</div>
+                    <div class="upload-text">クリックまたはドラッグ&ドロップでVRMファイルを選択</div>
+                </div>
+                <input type="file" id="vrm-file-input" accept=".vrm,.glb,.gltf">
+                
+                <div id="upload-status" class="status" style="display: none;">
+                    準備完了
+                </div>
+                
+                <div id="vrm-info" class="vrm-info" style="display: none;">
+                    <h4>読み込み済みVRM</h4>
+                    <div id="vrm-details">ファイル名: --</div>
+                </div>
+                
+                <button class="btn" onclick="loadSampleVRM()">
+                    🎭 サンプルVRMを読み込み
+                </button>
+            </div>
+            
+            <!-- ポーズコントロール -->
+            <div class="control-section">
+                <h3>🤸 ポーズ制御</h3>
+                
+                <div class="pose-grid">
+                    <button class="btn btn-small pose-btn" onclick="applyPose('neutral')">
+                        🧍 ニュートラル
+                    </button>
+                    <button class="btn btn-small pose-btn" onclick="applyPose('thinking')">
+                        🤔 考え中
+                    </button>
+                    <button class="btn btn-small pose-btn" onclick="applyPose('surprised')">
+                        😲 驚き
+                    </button>
+                    <button class="btn btn-small pose-btn" onclick="applyPose('sitting')">
+                        🪑 座る
+                    </button>
+                    <button class="btn btn-small pose-btn" onclick="applyPose('smiling')">
+                        😊 微笑み
+                    </button>
+                    <button class="btn btn-small pose-btn" onclick="applyPose('standing_up')">
+                        🏃 立ち上がり
+                    </button>
+                </div>
+                
+                <button class="btn" onclick="randomPose()" style="margin-top: 10px;">
+                    🎲 ランダムポーズ
+                </button>
+            </div>
+            
+            <!-- 表情コントロール -->
+            <div class="control-section">
+                <h3>😊 表情制御</h3>
+                
+                <div class="expression-grid">
+                    <button class="btn btn-small expression-btn" onclick="setExpression('neutral')">
+                        😐 通常
+                    </button>
+                    <button class="btn btn-small expression-btn" onclick="setExpression('happy')">
+                        😄 喜び
+                    </button>
+                    <button class="btn btn-small expression-btn" onclick="setExpression('sad')">
+                        😢 悲しみ
+                    </button>
+                    <button class="btn btn-small expression-btn" onclick="setExpression('angry')">
+                        😠 怒り
+                    </button>
+                    <button class="btn btn-small expression-btn" onclick="setExpression('surprised')">
+                        😲 驚き
+                    </button>
+                    <button class="btn btn-small expression-btn" onclick="setExpression('relaxed')">
+                        😌 リラックス
+                    </button>
+                </div>
+                
+                <button class="btn" onclick="randomExpression()" style="margin-top: 10px;">
+                    🎲 ランダム表情
+                </button>
+            </div>
+            
+            <!-- カメラコントロール -->
+            <div class="control-section">
+                <h3>📷 カメラ制御</h3>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>距離</span>
+                        <span id="distance-value">5.0</span>
+                    </div>
+                    <input type="range" id="camera-distance" class="slider" 
+                           min="1" max="10" step="0.1" value="5" 
+                           oninput="updateCameraDistance(this.value)">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>高さ</span>
+                        <span id="height-value">1.6</span>
+                    </div>
+                    <input type="range" id="camera-height" class="slider" 
+                           min="0" max="3" step="0.1" value="1.6" 
+                           oninput="updateCameraHeight(this.value)">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>角度</span>
+                        <span id="angle-value">0°</span>
+                    </div>
+                    <input type="range" id="camera-angle" class="slider" 
+                           min="0" max="360" step="5" value="0" 
+                           oninput="updateCameraAngle(this.value)">
+                </div>
+                
+                <button class="btn" onclick="resetCamera()">
+                    🔄 カメラリセット
+                </button>
+            </div>
+            
+            <!-- ライティングコントロール -->
+            <div class="control-section">
+                <h3>💡 ライティング</h3>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>メインライト強度</span>
+                        <span id="main-light-value">1.0</span>
+                    </div>
+                    <input type="range" id="main-light" class="slider" 
+                           min="0" max="2" step="0.1" value="1" 
+                           oninput="updateMainLight(this.value)">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>環境光強度</span>
+                        <span id="ambient-light-value">0.4</span>
+                    </div>
+                    <input type="range" id="ambient-light" class="slider" 
+                           min="0" max="1" step="0.1" value="0.4" 
+                           oninput="updateAmbientLight(this.value)">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>リムライト強度</span>
+                        <span id="rim-light-value">0.5</span>
+                    </div>
+                    <input type="range" id="rim-light" class="slider" 
+                           min="0" max="1" step="0.1" value="0.5" 
+                           oninput="updateRimLight(this.value)">
+                </div>
+            </div>
+            
+            <!-- アニメーション -->
+            <div class="control-section">
+                <h3>🎬 アニメーション</h3>
+                
+                <button class="btn" onclick="playAnimation()">
+                    ▶️ アニメーション再生
+                </button>
+                
+                <button class="btn" onclick="stopAnimation()">
+                    ⏹️ アニメーション停止
+                </button>
+                
+                <button class="btn" onclick="enableTransitions()">
+                    🌊 スムーズトランジション
+                </button>
+            </div>
+            
+            <!-- エクスポート -->
+            <div class="control-section">
+                <h3>💾 エクスポート</h3>
+                
+                <button class="btn" onclick="captureScreenshot()">
+                    📸 スクリーンショット
+                </button>
+                
+                <button class="btn" onclick="exportPose()">
+                    📋 ポーズデータ出力
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let vrmRenderer = null;
+        let poseController = null;
+        let currentVRM = null;
+        let isAnimating = false;
+        let transitionsEnabled = true;
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎮 VRMコントロール初期化開始');
+            
+            initializeVRMControls();
+            setupEventListeners();
+            setupDragAndDrop();
+            
+            updateStatus('VRMコントロールシステム準備完了', 'success');
+        });
+        
+        /**
+         * VRMコントロールシステム初期化
+         */
+        async function initializeVRMControls() {
+            try {
+                const canvas = document.getElementById('vrm-canvas');
+                
+                // VRMレンダラー初期化（モック）
+                console.log('📦 VRMレンダラー初期化...');
+                
+                // キャンバスサイズ設定
+                resizeCanvas();
+                
+                // 基本的な3Dシーンのモック描画
+                drawMockScene(canvas);
+                
+                console.log('✅ VRMコントロール初期化完了');
+                
+            } catch (error) {
+                console.error('❌ VRMコントロール初期化エラー:', error);
+                updateStatus('初期化エラー: ' + error.message, 'error');
+            }
+        }
+        
+        /**
+         * イベントリスナー設定
+         */
+        function setupEventListeners() {
+            // ファイル選択
+            document.getElementById('vrm-file-input').addEventListener('change', handleFileSelect);
+            
+            // ウィンドウリサイズ
+            window.addEventListener('resize', resizeCanvas);
+            
+            // キーボードショートカット
+            document.addEventListener('keydown', handleKeyboard);
+        }
+        
+        /**
+         * ドラッグ&ドロップ設定
+         */
+        function setupDragAndDrop() {
+            const uploadArea = document.querySelector('.file-upload');
+            
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+        }
+        
+        /**
+         * ファイル選択処理
+         */
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+        
+        /**
+         * ファイル処理
+         */
+        async function handleFile(file) {
+            console.log('📁 VRMファイル処理開始:', file.name);
+            
+            try {
+                updateStatus('VRMファイルをアップロード中...', 'loading');
+                
+                // ファイル検証
+                if (!isValidVRMFile(file)) {
+                    throw new Error('VRM, GLB, GLTFファイルのみサポートされています');
+                }
+                
+                // FormData作成
+                const formData = new FormData();
+                formData.append('vrmFile', file);
+                formData.append('characterName', file.name.replace(/\.[^/.]+$/, ''));
+                
+                // サーバーにアップロード
+                const response = await fetch('/api/vrm/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('✅ VRMアップロード成功:', result.vrm);
+                    
+                    // VRMモデル読み込み
+                    await loadVRMModel(result.vrm);
+                    
+                    updateStatus('VRMファイル読み込み完了', 'success');
+                    updateVRMInfo(result.vrm);
+                    
+                } else {
+                    throw new Error(result.error || 'アップロードに失敗しました');
+                }
+                
+            } catch (error) {
+                console.error('❌ VRMファイル処理エラー:', error);
+                updateStatus('エラー: ' + error.message, 'error');
+            }
+        }
+        
+        /**
+         * VRMファイル検証
+         */
+        function isValidVRMFile(file) {
+            const validExtensions = ['.vrm', '.glb', '.gltf'];
+            const extension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+            return validExtensions.includes(extension);
+        }
+        
+        /**
+         * VRMモデル読み込み
+         */
+        async function loadVRMModel(vrmInfo) {
+            console.log('🤖 VRMモデル読み込み:', vrmInfo.originalName);
+            
+            try {
+                // モック実装（実際の実装では three-vrm を使用）
+                currentVRM = {
+                    id: vrmInfo.id,
+                    name: vrmInfo.originalName,
+                    characterName: vrmInfo.metadata.characterName,
+                    loaded: true,
+                    poses: ['neutral', 'thinking', 'surprised', 'sitting', 'smiling', 'standing_up'],
+                    expressions: ['neutral', 'happy', 'sad', 'angry', 'surprised', 'relaxed']
+                };
+                
+                // 3Dシーンを更新
+                updateScene();
+                
+                console.log('✅ VRMモデル読み込み完了');
+                
+            } catch (error) {
+                console.error('❌ VRMモデル読み込みエラー:', error);
+                throw error;
+            }
+        }
+        
+        /**
+         * サンプルVRM読み込み
+         */
+        async function loadSampleVRM() {
+            console.log('🎭 サンプルVRM読み込み開始');
+            
+            try {
+                updateStatus('サンプルVRMを読み込み中...', 'loading');
+                
+                // モックサンプルVRM
+                const sampleVRM = {
+                    id: 'sample_vrm_' + Date.now(),
+                    originalName: 'Sample_Character.vrm',
+                    metadata: {
+                        characterName: 'サンプルキャラクター',
+                        description: 'VRMシステムのテスト用キャラクター'
+                    }
+                };
+                
+                await loadVRMModel(sampleVRM);
+                
+                updateStatus('サンプルVRM読み込み完了', 'success');
+                updateVRMInfo(sampleVRM);
+                
+            } catch (error) {
+                console.error('❌ サンプルVRM読み込みエラー:', error);
+                updateStatus('エラー: ' + error.message, 'error');
+            }
+        }
+        
+        /**
+         * ポーズ適用
+         */
+        async function applyPose(poseName) {
+            console.log('🤸 ポーズ適用:', poseName);
+            
+            if (!currentVRM) {
+                updateStatus('VRMモデルが読み込まれていません', 'error');
+                return;
+            }
+            
+            try {
+                updateStatus(`ポーズ "${poseName}" を適用中...`, 'loading');
+                
+                // モック実装
+                setTimeout(() => {
+                    updateStatus(`ポーズ "${poseName}" を適用しました`, 'success');
+                    updateModelInfo(`ポーズ: ${poseName}`);
+                }, transitionsEnabled ? 1000 : 100);
+                
+                // 実際の実装では poseController.applyPose(poseName) を呼び出し
+                
+            } catch (error) {
+                console.error('❌ ポーズ適用エラー:', error);
+                updateStatus('ポーズ適用エラー: ' + error.message, 'error');
+            }
+        }
+        
+        /**
+         * 表情設定
+         */
+        async function setExpression(expressionName) {
+            console.log('😊 表情設定:', expressionName);
+            
+            if (!currentVRM) {
+                updateStatus('VRMモデルが読み込まれていません', 'error');
+                return;
+            }
+            
+            try {
+                updateStatus(`表情 "${expressionName}" を設定中...`, 'loading');
+                
+                // モック実装
+                setTimeout(() => {
+                    updateStatus(`表情 "${expressionName}" を設定しました`, 'success');
+                }, transitionsEnabled ? 500 : 50);
+                
+                // 実際の実装では poseController.setExpression(expressionName) を呼び出し
+                
+            } catch (error) {
+                console.error('❌ 表情設定エラー:', error);
+                updateStatus('表情設定エラー: ' + error.message, 'error');
+            }
+        }
+        
+        /**
+         * ランダムポーズ
+         */
+        function randomPose() {
+            if (!currentVRM) {
+                updateStatus('VRMモデルが読み込まれていません', 'error');
+                return;
+            }
+            
+            const poses = ['neutral', 'thinking', 'surprised', 'sitting', 'smiling', 'standing_up'];
+            const randomIndex = Math.floor(Math.random() * poses.length);
+            applyPose(poses[randomIndex]);
+        }
+        
+        /**
+         * ランダム表情
+         */
+        function randomExpression() {
+            if (!currentVRM) {
+                updateStatus('VRMモデルが読み込まれていません', 'error');
+                return;
+            }
+            
+            const expressions = ['neutral', 'happy', 'sad', 'angry', 'surprised', 'relaxed'];
+            const randomIndex = Math.floor(Math.random() * expressions.length);
+            setExpression(expressions[randomIndex]);
+        }
+        
+        /**
+         * カメラ制御
+         */
+        function updateCameraDistance(value) {
+            document.getElementById('distance-value').textContent = parseFloat(value).toFixed(1);
+            updateCameraInfo();
+            // 実際の実装では camera.position.z = value を設定
+        }
+        
+        function updateCameraHeight(value) {
+            document.getElementById('height-value').textContent = parseFloat(value).toFixed(1);
+            updateCameraInfo();
+            // 実際の実装では camera.position.y = value を設定
+        }
+        
+        function updateCameraAngle(value) {
+            document.getElementById('angle-value').textContent = value + '°';
+            updateCameraInfo();
+            // 実際の実装では camera の回転を設定
+        }
+        
+        function resetCamera() {
+            document.getElementById('camera-distance').value = 5;
+            document.getElementById('camera-height').value = 1.6;
+            document.getElementById('camera-angle').value = 0;
+            
+            updateCameraDistance(5);
+            updateCameraHeight(1.6);
+            updateCameraAngle(0);
+            
+            updateStatus('カメラをリセットしました', 'success');
+        }
+        
+        /**
+         * ライティング制御
+         */
+        function updateMainLight(value) {
+            document.getElementById('main-light-value').textContent = parseFloat(value).toFixed(1);
+            // 実際の実装では directionalLight.intensity = value を設定
+        }
+        
+        function updateAmbientLight(value) {
+            document.getElementById('ambient-light-value').textContent = parseFloat(value).toFixed(1);
+            // 実際の実装では ambientLight.intensity = value を設定
+        }
+        
+        function updateRimLight(value) {
+            document.getElementById('rim-light-value').textContent = parseFloat(value).toFixed(1);
+            // 実際の実装では rimLight.intensity = value を設定
+        }
+        
+        /**
+         * アニメーション制御
+         */
+        function playAnimation() {
+            if (!isAnimating) {
+                isAnimating = true;
+                updateStatus('アニメーション開始', 'success');
+                // 実際の実装では vrmRenderer.startAnimation() を呼び出し
+            }
+        }
+        
+        function stopAnimation() {
+            if (isAnimating) {
+                isAnimating = false;
+                updateStatus('アニメーション停止', 'success');
+                // 実際の実装では vrmRenderer.stopAnimation() を呼び出し
+            }
+        }
+        
+        function enableTransitions() {
+            transitionsEnabled = !transitionsEnabled;
+            updateStatus(transitionsEnabled ? 'スムーズトランジション有効' : 'スムーズトランジション無効', 'success');
+        }
+        
+        /**
+         * エクスポート機能
+         */
+        function captureScreenshot() {
+            console.log('📸 スクリーンショット撮影');
+            
+            const canvas = document.getElementById('vrm-canvas');
+            const link = document.createElement('a');
+            link.download = 'vrm-screenshot-' + Date.now() + '.png';
+            link.href = canvas.toDataURL();
+            link.click();
+            
+            updateStatus('スクリーンショットを保存しました', 'success');
+        }
+        
+        function exportPose() {
+            if (!currentVRM) {
+                updateStatus('VRMモデルが読み込まれていません', 'error');
+                return;
+            }
+            
+            console.log('📋 ポーズデータ出力');
+            
+            const poseData = {
+                modelName: currentVRM.name,
+                timestamp: new Date().toISOString(),
+                camera: {
+                    distance: document.getElementById('camera-distance').value,
+                    height: document.getElementById('camera-height').value,
+                    angle: document.getElementById('camera-angle').value
+                },
+                lighting: {
+                    main: document.getElementById('main-light').value,
+                    ambient: document.getElementById('ambient-light').value,
+                    rim: document.getElementById('rim-light').value
+                }
+            };
+            
+            const dataStr = JSON.stringify(poseData, null, 2);
+            const link = document.createElement('a');
+            link.download = 'vrm-pose-' + Date.now() + '.json';
+            link.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            link.click();
+            
+            updateStatus('ポーズデータを出力しました', 'success');
+        }
+        
+        /**
+         * キーボードショートカット
+         */
+        function handleKeyboard(event) {
+            if (event.target.tagName === 'INPUT') return;
+            
+            switch (event.key) {
+                case 'r':
+                case 'R':
+                    randomPose();
+                    break;
+                case 'e':
+                case 'E':
+                    randomExpression();
+                    break;
+                case 'c':
+                case 'C':
+                    resetCamera();
+                    break;
+                case ' ':
+                    event.preventDefault();
+                    isAnimating ? stopAnimation() : playAnimation();
+                    break;
+            }
+        }
+        
+        /**
+         * UI更新関数
+         */
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('upload-status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+            statusDiv.style.display = 'block';
+            
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+        
+        function updateVRMInfo(vrmInfo) {
+            const infoDiv = document.getElementById('vrm-info');
+            const detailsDiv = document.getElementById('vrm-details');
+            
+            detailsDiv.innerHTML = `
+                <div>ファイル名: ${vrmInfo.originalName}</div>
+                <div>キャラクター名: ${vrmInfo.metadata.characterName}</div>
+                <div>読み込み時刻: ${new Date().toLocaleTimeString()}</div>
+            `;
+            
+            infoDiv.style.display = 'block';
+        }
+        
+        function updateModelInfo(info) {
+            document.getElementById('model-info').textContent = 'VRMモデル: ' + (currentVRM ? currentVRM.name + ' - ' + info : '未読み込み');
+        }
+        
+        function updateCameraInfo() {
+            const distance = document.getElementById('camera-distance').value;
+            const height = document.getElementById('camera-height').value;
+            const angle = document.getElementById('camera-angle').value;
+            
+            document.getElementById('camera-info').textContent = `カメラ: 距離${distance}, 高さ${height}, 角度${angle}°`;
+        }
+        
+        function resizeCanvas() {
+            const canvas = document.getElementById('vrm-canvas');
+            const viewport = canvas.parentElement;
+            
+            canvas.width = viewport.clientWidth;
+            canvas.height = viewport.clientHeight;
+            
+            // 実際の実装では renderer.setSize() を呼び出し
+            drawMockScene(canvas);
+        }
+        
+        function updateScene() {
+            const canvas = document.getElementById('vrm-canvas');
+            drawMockScene(canvas);
+        }
+        
+        /**
+         * モック3Dシーン描画
+         */
+        function drawMockScene(canvas) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 背景グラデーション
+            const gradient = ctx.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(1, '#E0F6FF');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            // 床のグリッド
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            
+            const gridSize = 50;
+            for (let x = 0; x < width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, height * 0.8);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+            
+            for (let y = height * 0.8; y < height; y += gridSize * 0.5) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            
+            // VRMキャラクターの代替表示
+            if (currentVRM) {
+                drawMockCharacter(ctx, width / 2, height * 0.7);
+            } else {
+                // プレースホルダー
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.font = '24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('VRMモデルを読み込んでください', width / 2, height / 2);
+            }
+        }
+        
+        /**
+         * モックキャラクター描画
+         */
+        function drawMockCharacter(ctx, centerX, centerY) {
+            const scale = 80;
+            
+            // 影
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY + scale * 0.8, scale * 0.6, scale * 0.2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 体
+            ctx.fillStyle = '#87ceeb';
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY, scale * 0.4, scale * 0.7, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 頭
+            ctx.fillStyle = '#ffdbac';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY - scale * 0.9, scale * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 目
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(centerX - scale * 0.1, centerY - scale * 0.95, scale * 0.03, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(centerX + scale * 0.1, centerY - scale * 0.95, scale * 0.03, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 口
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY - scale * 0.85, scale * 0.08, 0, Math.PI, false);
+            ctx.stroke();
+            
+            // 腕
+            ctx.strokeStyle = '#ffdbac';
+            ctx.lineWidth = scale * 0.06;
+            ctx.lineCap = 'round';
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX - scale * 0.35, centerY - scale * 0.2);
+            ctx.lineTo(centerX - scale * 0.6, centerY + scale * 0.1);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX + scale * 0.35, centerY - scale * 0.2);
+            ctx.lineTo(centerX + scale * 0.6, centerY + scale * 0.1);
+            ctx.stroke();
+            
+            // 脚
+            ctx.strokeStyle = '#4a4a4a';
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX - scale * 0.15, centerY + scale * 0.6);
+            ctx.lineTo(centerX - scale * 0.15, centerY + scale * 1.2);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX + scale * 0.15, centerY + scale * 0.6);
+            ctx.lineTo(centerX + scale * 0.15, centerY + scale * 1.2);
+            ctx.stroke();
+        }
+    </script>
+</body>
+</html>

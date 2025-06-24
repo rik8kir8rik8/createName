@@ -350,6 +350,35 @@
   gap: 20px;
 }
 
+/* Three.js パネル表示 */
+.panels-3d-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.panel-3d-wrapper {
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  height: 280px;
+}
+
+/* フォールバック用の静的画像 */
+.static-image-fallback {
+  margin-top: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
 .page-image-container {
   width: 100%;
   max-width: 800px;
@@ -364,6 +393,18 @@
   height: auto;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .panels-3d-container {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .panel-3d-wrapper {
+    height: 240px;
+  }
 }
 
 .page-image-info {

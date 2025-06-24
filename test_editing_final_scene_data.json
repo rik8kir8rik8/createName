@@ -1,0 +1,264 @@
+{
+  "camera": {
+    "position": {
+      "x": 5,
+      "y": 4,
+      "z": 8
+    },
+    "target": {
+      "x": -1,
+      "y": 1,
+      "z": 0
+    },
+    "fov": 55,
+    "aspect": 1.3333333333333333,
+    "near": 0.1,
+    "far": 1000,
+    "type": "eye-level",
+    "originalAngle": "middle",
+    "description": "ミドルショット撮影",
+    "compositionBased": true,
+    "adjustment": {
+      "x": 0,
+      "y": 3,
+      "z": 5,
+      "target": {
+        "x": 0,
+        "y": 4,
+        "z": -9
+      }
+    }
+  },
+  "character": {
+    "visible": true,
+    "clothing": "casual",
+    "hair": "messy",
+    "expression": "interested",
+    "pose": "standing",
+    "position": {
+      "x": -2,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "originalDescription": "太郎は寝間着姿で、髪の毛はやや乱れている。表情は少し眠そうだが、朝の陽射しに目を細める。",
+    "detailedAttributes": {
+      "clothingColor": {
+        "shirt": "#FFB6C1",
+        "pants": "#FFB6C1"
+      },
+      "skinTone": "#FFDBAC",
+      "facialDetails": "squinting",
+      "bodyLanguage": "neutral"
+    }
+  },
+  "background": {
+    "visible": true,
+    "environment": "living-room",
+    "lighting": "noon",
+    "props": [
+      "bed",
+      "curtain",
+      "window",
+      "flooring",
+      "floor",
+      "clothes",
+      "clothing"
+    ],
+    "roomLayout": {
+      "roomType": "bedroom",
+      "furniture": [
+        {
+          "type": "bed",
+          "position": "center-right"
+        },
+        {
+          "type": "curtain",
+          "position": "left-wall"
+        },
+        {
+          "type": "window",
+          "position": "left-wall"
+        }
+      ],
+      "floorType": "wood-flooring",
+      "lightingSources": [
+        {
+          "type": "natural",
+          "source": "window",
+          "intensity": "soft"
+        }
+      ]
+    },
+    "atmosphericEffects": {
+      "lightRays": true,
+      "dust": false,
+      "warmth": true,
+      "softness": true
+    },
+    "ambientColor": "#FFF8DC",
+    "lightIntensity": 0.9,
+    "originalDescription": "室内にはベッド、カーテン、窓、フローリングの床が描かれ、所々に衣類などの脱いだ服が見えている。朝の光が優しく部屋を照らしている様子が伝わる。"
+  },
+  "composition": {
+    "layout": "depth-layered",
+    "foregroundObjects": [
+      {
+        "type": "character",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "type": "bed",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "type": "curtain",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "type": "window",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "type": "light",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "type": "room",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "type": "morning-light",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 2
+        }
+      }
+    ],
+    "midgroundObjects": [],
+    "backgroundObjects": [],
+    "spatialRelationships": [
+      {
+        "keyword": "手前",
+        "position": "foreground",
+        "context": "朝の光に向けられる。手前にベッドがあり奥にカ"
+      },
+      {
+        "keyword": "奥",
+        "position": "background",
+        "context": "。手前にベッドがあり奥にカーテンと窓が見え"
+      },
+      {
+        "keyword": "前",
+        "position": "front",
+        "context": "の光に向けられる。手前にベッドがあり奥にカ"
+      },
+      {
+        "keyword": "引きの視点",
+        "position": "wide-view",
+        "context": "こしている姿を、やや引きの視点で部屋の中全体が見え"
+      },
+      {
+        "keyword": "やや引き",
+        "position": "medium-wide",
+        "context": "を起こしている姿を、やや引きの視点で部屋の中全体"
+      },
+      {
+        "keyword": "全体",
+        "position": "full-view",
+        "context": "引きの視点で部屋の中全体が見えるように配置。"
+      },
+      {
+        "keyword": "見える",
+        "position": "visible",
+        "context": "視点で部屋の中全体が見えるように配置。視線はカ"
+      },
+      {
+        "keyword": "配置",
+        "position": "positioned",
+        "context": "中全体が見えるように配置。視線はカーテンから"
+      }
+    ],
+    "originalText": "キャラクターである太郎がベッドから体を起こしている姿を、やや引きの視点で部屋の中全体が見えるように配置。視線はカーテンから差し込む朝の光に向けられる。手前にベッドがあり奥にカーテンと窓が見える。",
+    "cameraDistance": "far",
+    "viewType": "establishing-shot",
+    "depthLayers": {
+      "foreground": [
+        "bed",
+        "curtain",
+        "window"
+      ],
+      "background": [
+        "curtain",
+        "window"
+      ]
+    },
+    "gazeDirection": "curtain"
+  },
+  "visualEffects": {
+    "filter": "none",
+    "intensity": 1,
+    "postProcessing": {
+      "bloom": false,
+      "blur": false,
+      "colorGrading": false,
+      "vignette": false
+    },
+    "animation": {
+      "enabled": false,
+      "type": "none",
+      "duration": 1,
+      "easing": "linear"
+    },
+    "originalEffect": "normal",
+    "description": "通常の描画"
+  },
+  "metadata": {
+    "originalData": {
+      "index": 1,
+      "cameraAngle": "middle",
+      "composition": "キャラクターである太郎がベッドから体を起こしている姿を、やや引きの視点で部屋の中全体が見えるように配置。視線はカーテンから差し込む朝の光に向けられる。手前にベッドがあり奥にカーテンと窓が見える。",
+      "visualEffects": "normal",
+      "characterDetails": "太郎は寝間着姿で、髪の毛はやや乱れている。表情は少し眠そうだが、朝の陽射しに目を細める。",
+      "background": 1,
+      "backgroundDetails": "室内にはベッド、カーテン、窓、フローリングの床が描かれ、所々に衣類などの脱いだ服が見えている。朝の光が優しく部屋を照らしている様子が伝わる。"
+    },
+    "mappedAt": "2025-06-23T16:10:13.298Z",
+    "panelIndex": 1,
+    "mappingVersion": "2.0"
+  }
+}

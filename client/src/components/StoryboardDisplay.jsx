@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './StoryboardDisplay.css';
 import { generatePageImages } from '../services/api';
+import ThreeJSPreview from './ThreeJSPreview';
 
 const StoryboardDisplay = ({ storyboard, loading }) => {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
@@ -122,30 +123,48 @@ const StoryboardDisplay = ({ storyboard, loading }) => {
       </div>
 
       <div className="manga-pages-container">
-        {pageImages ? (
-          <div className="manga-page-image">
-            <div className="page-image-container">
-              <img
-                src={pageImages[currentPageIndex]?.imageData}
-                alt={`ページ ${currentPageIndex + 1}`}
-                className="page-image"
-              />
+        {currentScene ? (
+          <div className="manga-page-content">
+            {/* Three.jsによるコマ表示 */}
+            <div className="panels-3d-container">
+              {currentScene.panels.map((panel, index) => (
+                <div key={index} className="panel-3d-wrapper">
+                  <ThreeJSPreview
+                    panelData={panel}
+                    sceneData={panel.composition_data || {
+                      camera: { type: 'middle' },
+                      background: { props: ['room'] },
+                      character: { 
+                        visible: panel.content.characters?.length > 0,
+                        pose: panel.content.characters?.[0]?.pose || 'standing'
+                      }
+                    }}
+                    width={380}
+                    height={280}
+                  />
+                </div>
+              ))}
             </div>
+            
+            {/* 従来の静的画像（フォールバック） */}
+            {pageImages && (
+              <div className="static-image-fallback">
+                <div className="page-image-container">
+                  <img
+                    src={pageImages[currentPageIndex]?.imageData}
+                    alt={`ページ ${currentPageIndex + 1} (静的画像)`}
+                    className="page-image"
+                  />
+                </div>
+              </div>
+            )}
+            
             <div className="page-image-info">
-              <h3>ページ {pageImages[currentPageIndex]?.pageNumber}</h3>
-              <p>
-                シーン: {pageImages[currentPageIndex]?.sceneInfo.description}
-              </p>
-              <p>
-                感情: {pageImages[currentPageIndex]?.sceneInfo.emotion_tone}
-              </p>
-              <p>
-                レイアウト:{' '}
-                {pageImages[currentPageIndex]?.sceneInfo.layout_template}
-              </p>
-              <p>
-                コマ数: {pageImages[currentPageIndex]?.sceneInfo.panels_count}
-              </p>
+              <h3>ページ {currentPageIndex + 1}</h3>
+              <p>シーン: {currentScene.description}</p>
+              <p>感情: {currentScene.emotion_tone}</p>
+              <p>レイアウト: {currentScene.layout_template}</p>
+              <p>コマ数: {currentScene.panels.length}</p>
             </div>
           </div>
         ) : imageLoading ? (

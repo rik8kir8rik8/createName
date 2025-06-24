@@ -1,0 +1,146 @@
+.threejs-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.threejs-mount {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.threejs-mount canvas {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.threejs-preview.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
+.threejs-preview.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #dc3545;
+  background: #ffeaea;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.error-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.preview-info {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.preview-info span {
+  padding: 0 4px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* フォールバック表示 */
+.threejs-preview.fallback {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  border: 2px dashed #dee2e6;
+}
+
+.fallback-content {
+  text-align: center;
+  color: #495057;
+  width: 100%;
+}
+
+.panel-info h3 {
+  margin: 0 0 8px 0;
+  color: #343a40;
+  font-size: 16px;
+}
+
+.panel-info p {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.character-info, .dialogue-info {
+  margin: 8px 0;
+  font-size: 11px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.camera-info {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  font-size: 10px;
+  color: #6c757d;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .threejs-preview {
+    border-radius: 4px;
+  }
+  
+  .preview-info {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  
+  .panel-info h3 {
+    font-size: 14px;
+  }
+  
+  .character-info, .dialogue-info {
+    font-size: 10px;
+  }
+}

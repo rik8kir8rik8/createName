@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'http://localhost:3001/api');
 
 export const generateStoryboard = async (
   text,
@@ -71,6 +71,28 @@ export const reloadContext = async () => {
 
   if (!response.ok) {
     throw new Error('Failed to reload context');
+  }
+
+  return await response.json();
+};
+
+// 3Dプレビューを取得する新しいAPI関数
+export const get3DPreview = async (panelNumber) => {
+  const response = await fetch(`${API_BASE_URL}/3d-preview/${panelNumber}`);
+
+  if (!response.ok) {
+    throw new Error('Failed to get 3D preview');
+  }
+
+  return await response.json();
+};
+
+// 最新の3Dプレビュー一覧を取得
+export const getLatest3DPreviews = async () => {
+  const response = await fetch(`${API_BASE_URL}/3d-previews/latest`);
+
+  if (!response.ok) {
+    throw new Error('Failed to get latest 3D previews');
   }
 
   return await response.json();
